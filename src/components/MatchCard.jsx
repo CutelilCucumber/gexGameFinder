@@ -1,4 +1,4 @@
-import { fmtClock } from "../utils/FmtClock.jsx";
+import { fmtClock } from "../utils/fmtClock.js";
 import sparkline from "./Sparkline.jsx";
 
 const GAMEMODES = {
@@ -14,7 +14,6 @@ const badgeMeta = {
 };
 
 export default function MatchCard({ m, analysis }) {
-    console.log("MatchCard", m, analysis);
   const players = m.Players ?? [];
   const byAlly = new Map();
   for (const p of players) {

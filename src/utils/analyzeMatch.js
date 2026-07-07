@@ -1,31 +1,41 @@
-import { frameToClock } from "./FmtClock.jsx";
+import { frameToClock } from "./fmtClock.js";
 
 export default function analyzeMatch(match, teamStats) {
-    console.log("Analyzing: ", match, teamStats);
+
+  // build lookup table
   const teamToAlly = new Map();
   const skillByAlly = new Map();
-  for (const p of match.Players ?? []) {
-    teamToAlly.set(p.TeamID, p.AllyTeamID);
-    const arr = skillByAlly.get(p.AllyTeamID) ?? [];
+  for (const p of match.players ?? []) {
+    teamToAlly.set(p.teamID, p.allyTeamID);
+    const arr = skillByAlly.get(p.allyTeamID) ?? [];
     arr.push(p.Skill ?? 0);
-    skillByAlly.set(p.AllyTeamID, arr);
+    skillByAlly.set(p.allyTeamID, arr);
   }
 
-  const allyIds = [...new Set((match.AllyTeams ?? []).map((a) => a.AllyTeamID))];
-  if (allyIds.length !== 2) return null; // only score clean 1-side-vs-1-side games for now
+  // only score 2 team games for now
+  const allyIds = [...new Set((match.allyTeams ?? []).map((a) => a.allyTeamID))];
+  if (allyIds.length !== 2) {
+    console.log("not a 2-team game, skipping scoring");
+    return null;
+  }
 
-  const winner = (match.AllyTeams ?? []).find((a) => a.Won)?.AllyTeamID;
-  if (winner === undefined) return null;
+  const winner = (match.allyTeams ?? []).find((a) => a.won)?.allyTeamID;
+  if (winner === undefined) {
+    console.log("no winner found, skipping scoring");
+    return null;
+  }
   const loser = allyIds.find((a) => a !== winner);
 
   // frame -> allyTeamID -> aggregated cumulative stats
   const byFrame = new Map();
   for (const row of teamStats) {
-    const ally = teamToAlly.get(row.TeamID);
-    if (ally === undefined) continue;
-    if (!byFrame.has(row.Frame)) byFrame.set(row.Frame, new Map());
-    const frameMap = byFrame.get(row.Frame);
+    const ally = teamToAlly.get(row.teamID);
+    //drop any stats for players not in the match (e.g. spectators)
+    if (ally === undefined) continue; 
+    if (!byFrame.has(row.frame)) byFrame.set(row.frame, new Map());
+    const frameMap = byFrame.get(row.frame);
     const cur = frameMap.get(ally) ?? { metal: 0, dmgDealt: 0, dmgRecv: 0, kills: 0 };
+    // aggregate cumulative stats for this ally team at this frame
     cur.metal += Number(row.MetalProduced ?? 0);
     cur.dmgDealt += Number(row.DamageDealt ?? 0);
     cur.dmgRecv += Number(row.DamageReceived ?? 0);
@@ -34,8 +44,14 @@ export default function analyzeMatch(match, teamStats) {
   }
 
   const frames = [...byFrame.keys()].sort((a, b) => a - b);
-  if (frames.length < 3) return null;
+  console.log("frames: ", frames);
+  // exclude very short games
+  if (frames.length < 3) {
+    console.log("game too short, skipping scoring");
+    return null;
+  }
 
+  // compute comeback
   let maxDeficitPct = 0;
   let deficitFrame = 0;
   let maxDps = 0;
@@ -87,15 +103,16 @@ export default function analyzeMatch(match, teamStats) {
     const arr = skillByAlly.get(allyId) ?? [0];
     return arr.reduce((a, b) => a + b, 0) / arr.length;
   };
-  const skillGap = avgSkill(loser) - avgSkill(winner); // positive => winner was the underdog
+  // positive => winner was the underdog
+  const skillGap = avgSkill(loser) - avgSkill(winner); 
 
-  const durationMin = match.DurationMs / 60000;
+  const durationMin = match.durationMs / 60000;
 
   const badges = [];
   let score = 20;
 
   // comeback: winner was significantly behind in economy, and not right at the start
-  const comebackLate = deficitFrame / FRAME_RATE / 60 > 3; // after the 3 min mark
+  const comebackLate = deficitFrame / FRAME_RATE / 60 > 5; // after the 5 min mark
   if (maxDeficitPct > 20 && comebackLate) {
     badges.push("comeback");
     score += Math.min(35, maxDeficitPct * 0.9);
@@ -109,7 +126,7 @@ export default function analyzeMatch(match, teamStats) {
   }
 
   // nailbiter: kills close to even at the end, longish game
-  if (killRatio > 0.75 && durationMin > 12) {
+  if (killRatio > 0.75 && durationMin > 20) {
     badges.push("nailbiter");
     score += 20;
   }

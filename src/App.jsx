@@ -1,17 +1,38 @@
 import { useState, useRef, useCallback } from "react";
 import MatchCard from "./components/MatchCard.jsx";
-import analyzeMatch from "./utils/AnalyzeMatch.jsx";
+import analyzeMatch from "./utils/analyzeMatch.js";
 
-/* ------------------------------------------------------------------ */
-/*  Beyond All Reason — Spectator Finder                              */
-/*  Reads live data straight from the public Gex API (gex.honu.pw)    */
-/*  and scores recent matches on how "worth watching" they are.       */
-/* ------------------------------------------------------------------ */
+/* ------------------------------- api --------------------------------- */
 
 const API = "https://gex.honu.pw/api";
 const FRAME_RATE = 30; // BAR/Recoil sim frames per second
 
+class RateLimiter {
+  constructor(capacity, refillPerSec) {
+    this.capacity = capacity;
+    this.tokens = capacity;
+    this.refillPerSec = refillPerSec;
+    this.lastRefill = Date.now();
+  }
+  async acquire() {
+    for (;;) {
+      const now = Date.now();
+      const elapsed = (now - this.lastRefill) / 1000;
+      this.tokens = Math.min(this.capacity, this.tokens + elapsed * this.refillPerSec);
+      this.lastRefill = now;
+      if (this.tokens >= 1) {
+        this.tokens -= 1;
+        return;
+      }
+      const waitMs = ((1 - this.tokens) / this.refillPerSec) * 1000;
+      await new Promise((r) => setTimeout(r, Math.max(50, waitMs)));
+    }
+  }
+}
+const rateLimiter = new RateLimiter(300, 1);
+
 async function getJson(url) {
+  await rateLimiter.acquire();
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   const body = await res.json();
@@ -24,7 +45,7 @@ export default function App() {
   const [gamemode, setGamemode] = useState("");
   const [minDuration, setMinDuration] = useState(10);
   const [minPlayers, setMinPlayers] = useState(1);
-  const [scanDepth, setScanDepth] = useState(60);
+  const [scanDepth, setScanDepth] = useState(30);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [results, setResults] = useState([]);
@@ -45,7 +66,7 @@ export default function App() {
         orderByDir: "desc",
         durationMinimum: String(minDuration * 60 * 1000),
         playerCountMinimum: String(minPlayers),
-        processingParsed: "true",
+        processingAction: "true",
       });
       if (gamemode) params.set("gamemode", gamemode);
 
@@ -53,7 +74,7 @@ export default function App() {
       setProgress({ done: 0, total: matches.length });
 
       const scored = [];
-      const CONCURRENCY = 4;
+      const CONCURRENCY = 1;
       let idx = 0;
 
       async function worker() {
@@ -70,12 +91,18 @@ export default function App() {
             } catch { /* no cache entry yet */ }
 
             if (cached) {
+              console.log("pulling from cache")
               analysis = cached;
             } else {
+              console.log("fetching from API")
               const events = await getJson(
                 `${API}/game-event/${m.id}?includeTeamStats=true`
               );
-              analysis = analyzeMatch(m, events.TeamStats ?? []);
+              console.log("processed replay?: ", m.processing.replaySimulated);
+              console.log("match: ", m);
+              console.log("events: ", events);
+              analysis = analyzeMatch(m, events.teamStats ?? []);
+              console.log("analysis: ", analysis);
               try {
                 await window.storage.set(cacheKey, JSON.stringify(analysis), true);
               } catch { /* best effort cache */ }
