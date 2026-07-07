@@ -1,47 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import MatchCard from "./components/MatchCard.jsx";
+import getJson from "./utils/api.js";
 import analyzeMatch from "./utils/analyzeMatch.js";
-
-/* ------------------------------- api --------------------------------- */
+import MatchCard from "./components/MatchCard.jsx";
 
 const API = "https://gex.honu.pw/api";
 const FRAME_RATE = 30; // BAR/Recoil sim frames per second
-
-class RateLimiter {
-  constructor(capacity, refillPerSec) {
-    this.capacity = capacity;
-    this.tokens = capacity;
-    this.refillPerSec = refillPerSec;
-    this.lastRefill = Date.now();
-  }
-  async acquire() {
-    for (;;) {
-      const now = Date.now();
-      const elapsed = (now - this.lastRefill) / 1000;
-      this.tokens = Math.min(this.capacity, this.tokens + elapsed * this.refillPerSec);
-      this.lastRefill = now;
-      if (this.tokens >= 1) {
-        this.tokens -= 1;
-        return;
-      }
-      const waitMs = ((1 - this.tokens) / this.refillPerSec) * 1000;
-      await new Promise((r) => setTimeout(r, Math.max(50, waitMs)));
-    }
-  }
-}
-const rateLimiter = new RateLimiter(300, 1);
-
-async function getJson(url) {
-  await rateLimiter.acquire();
-  const res = await fetch(url, 
-    { headers: { 'User-Agent': 'gexGameFinder (discord: cutelilcucumber)' } }
-  );
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  const body = await res.json();
-  return body.data ?? body;
-}
-
-/* ------------------------------- app --------------------------------- */
 
 export default function App() {
   const [gamemode, setGamemode] = useState("");
@@ -100,7 +63,6 @@ export default function App() {
               const events = await getJson(
                 `${API}/game-event/${m.id}?includeTeamStats=true`
               );
-              console.log("processed replay?: ", m.processing.replaySimulated);
               console.log("match: ", m);
               console.log("events: ", events);
               analysis = analyzeMatch(m, events.teamStats ?? []);
