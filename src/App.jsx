@@ -33,7 +33,9 @@ const rateLimiter = new RateLimiter(300, 1);
 
 async function getJson(url) {
   await rateLimiter.acquire();
-  const res = await fetch(url);
+  const res = await fetch(url, 
+    { headers: { 'User-Agent': 'gexGameFinder (discord: cutelilcucumber)' } }
+  );
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   const body = await res.json();
   return body.data ?? body;
