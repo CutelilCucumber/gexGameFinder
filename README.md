@@ -25,4 +25,6 @@ Scans recent Beyond All Reason matches and scores them on how worth watching the
 - Matches need to be fully parsed by gex (`processingParsed=true`) before scoring works — very fresh uploads may not qualify yet.
 ## Usage
  
-Drop `bar-spectator-finder.jsx` into a React environment with `useState`/`useCallback` and a `window.storage` key-value API available (get/set/delete, with a `shared` flag). Set your filters, hit **Run scan**.
+Clone the repo
+npm install
+npm run dev
