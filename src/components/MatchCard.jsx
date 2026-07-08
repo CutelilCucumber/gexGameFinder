@@ -1,123 +1,103 @@
-import { fmtClock } from "../utils/fmtClock.js";
-import Sparkline from "./Sparkline.jsx";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { MILESTONES, COLORS } from "../utils/globalVars";
+import { ScoreDial, Badge, MiniSparkline, MatchDetail } from "./index";
 
-const GAMEMODES = {
-  0: "Unknown",
-  1: "Duel",
-  2: "Small Team",
-  3: "Large Team",
-  4: "FFA",
-  5: "Team FFA",
-};
-
-const badgeMeta = {
-  comeback: { label: "COMEBACK", color: "var(--amber)" },
-  battle: { label: "BIG BATTLE", color: "var(--red)" },
-  nailbiter: { label: "NAIL-BITER", color: "var(--cyan)" },
-  upset: { label: "UPSET", color: "var(--violet)" },
-  stomp: { label: "ONE-SIDED", color: "var(--dim)" },
-};
-
-export default function MatchCard({ m, analysis }) {
-  const players = m.players ?? [];
-  const byAlly = new Map();
-  for (const p of players) {
-    const arr = byAlly.get(p.allyTeamID) ?? [];
-    arr.push(p);
-    byAlly.set(p.allyTeamID, arr);
-  }
-  const allyTeams = m.allyTeams ?? [];
-
+export function MatchCard({ match, analysis, expanded, onToggle }) {
+  const activeMilestones = MILESTONES.filter((m) => analysis.flags[m.key]);
   return (
-    <div className="card">
-      <div className="card-top">
-        <div className="score" style={{ "--s": analysis ? analysis.score : 0 }}>
-          <span>{analysis ? analysis.score : "—"}</span>
-        </div>
-        <div className="meta">
-          <div className="meta-row">
-            <span className="map">{m.map || m.mapName}</span>
-            <span className="dot">·</span>
-            <span>{GAMEMODES[m.gamemode] ?? "?"}</span>
-            <span className="dot">·</span>
-            <span>{fmtClock(m.durationMs)}</span>
-            <span className="dot">·</span>
-            <span>{m.playerCount}p</span>
+    <div
+      style={{
+        background: COLORS.panel,
+        border: `1px solid ${COLORS.line}`,
+        borderRadius: 12,
+        overflow: "hidden",
+        transition: "border-color 120ms ease",
+      }}
+    >
+      <button
+        onClick={onToggle}
+        style={{
+          all: "unset",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          padding: "14px 16px",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <ScoreDial score={analysis.score} />
+        <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 700,
+                fontSize: 15.5,
+                color: COLORS.ink,
+              }}
+            >
+              {match.map}
+            </span>
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11,
+                color: COLORS.muted,
+              }}
+            >
+              {match.gamemode} · {match.durationMin}m · {match.playerCount}p
+            </span>
           </div>
-          <div className="badges">
-            {(analysis?.badges ?? []).map((b) => (
+          <div
+            style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}
+          >
+            {activeMilestones.length > 0 ? (
+              activeMilestones.map((m) => (
+                <Badge
+                  key={m.key}
+                  def={m}
+                  magnitude={analysis.magnitudes[m.key]}
+                />
+              ))
+            ) : (
               <span
-                key={b}
-                className="badge"
-                style={{ "--c": badgeMeta[b].color }}
+                style={{
+                  fontSize: 11.5,
+                  color: COLORS.faint,
+                  fontFamily: "'Inter', sans-serif",
+                }}
               >
-                {badgeMeta[b].label}
+                no milestones fired
               </span>
-            ))}
-            {!analysis && (
-              <span className="badge dim">NOT SCORED (needs 2 sides)</span>
             )}
           </div>
         </div>
-        {analysis && (
-          <Sparkline
-            series={analysis.series}
-            winnerAllyId={analysis.winnerAllyId}
-          />
-        )}
-      </div>
-
-      <div className="rosters">
-        {allyTeams.map((at) => (
-          <div className="roster" key={at.allyTeamID}>
-            <div className={"roster-head"}></div>
-            {(byAlly.get(at.allyTeamID) ?? []).map((p) => (
-              <div className="player" key={p.playerID}>
-                <span className="pname">{p.name}</span>
-                <span className="pskill">{Math.round(p.Skill)}</span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {analysis && (
-        <div className="facts">
-          {analysis.badges.includes("comeback") && (
-            <span>
-              economy was down {analysis.maxDeficitPct}% at{" "}
-              {analysis.deficitClock}, won anyway
-            </span>
-          )}
-          {analysis.badges.includes("battle") && (
-            <span>
-              peak combat ~{analysis.maxDps.toLocaleString()} dmg/s around{" "}
-              {analysis.dpsClock}
-            </span>
-          )}
-          {analysis.badges.includes("nailbiter") && (
-            <span>
-              kill counts within {Math.round(analysis.killRatio * 100)}% of each
-              other at the end
-            </span>
-          )}
-          {analysis.badges.includes("upset") && (
-            <span>
-              winner averaged {analysis.skillGap} lower skill rating than the
-              loser
-            </span>
+        <div
+          style={{
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <MiniSparkline series={match.series} winner={match.winner} />
+          {expanded ? (
+            <ChevronDown size={16} color={COLORS.muted} />
+          ) : (
+            <ChevronRight size={16} color={COLORS.muted} />
           )}
         </div>
-      )}
-
-      <a
-        className="open"
-        href={`https://gex.honu.pw/match/${m.id}`}
-        target="_blank"
-        rel="noreferrer"
-      >
-        open replay on gex →
-      </a>
+      </button>
+      {expanded && <MatchDetail match={match} analysis={analysis} />}
     </div>
   );
 }

@@ -1,163 +1,88 @@
-import { frameToClock } from "./fmtClock.js";
+export function analyzeMatch(match) {
+  const { series, winner, teamA, teamB, durationMin } = match;
+  const last = series[series.length - 1];
+  const winnerIsA = winner === "A";
 
-export default function analyzeMatch(match, teamStats) {
-  
-  const FRAME_RATE = 30; // BAR/Recoil sim frames per second
-
-  // build lookup table
-  const teamToAlly = new Map();
-  const skillByAlly = new Map();
-  for (const p of match.players ?? []) {
-    teamToAlly.set(p.teamID, p.allyTeamID);
-    const arr = skillByAlly.get(p.allyTeamID) ?? [];
-    arr.push(p.Skill ?? 0);
-    skillByAlly.set(p.allyTeamID, arr);
+  // --- comeback: how far behind (in eco share) was the winner at their worst point? ---
+  let worstDeficit = 0;
+  for (const p of series) {
+    const winnerShare = winnerIsA ? p.leadPct : 1 - p.leadPct;
+    const deficit = 0.5 - winnerShare;
+    if (deficit > worstDeficit) worstDeficit = deficit;
   }
+  const comeback = worstDeficit >= 0.13; // winner was ever down >13pts of eco share
+  const comebackMagnitude = Math.min(1, worstDeficit / 0.35);
 
-  // only score 2 team games for now
-  const allyIds = [...new Set((match.allyTeams ?? []).map((a) => a.allyTeamID))];
-  if (allyIds.length !== 2) {
-    console.log("not a 2-team game, skipping scoring");
-    return null;
-  }
+  // --- close finish: final eco share within 6pts, and a real game (12+ min) ---
+  const finalGap = Math.abs(last.leadPct - 0.5);
+  const closeFinish = finalGap <= 0.06 && durationMin >= 12;
+  const closeMagnitude = closeFinish ? 1 - finalGap / 0.06 : 0;
 
-  const winner = (match.allyTeams ?? []).find((a) => a.won)?.allyTeamID;
-  if (winner === undefined) {
-    console.log("no winner found, skipping scoring");
-    return null;
-  }
-  const loser = allyIds.find((a) => a !== winner);
-
-  // frame -> allyTeamID -> aggregated cumulative stats
-  const byFrame = new Map();
-  for (const row of teamStats) {
-    const ally = teamToAlly.get(row.teamID);
-    //drop any stats for players not in the match (e.g. spectators)
-    if (ally === undefined) continue; 
-    if (!byFrame.has(row.frame)) byFrame.set(row.frame, new Map());
-    const frameMap = byFrame.get(row.frame);
-    const cur = frameMap.get(ally) ?? { metal: 0, dmgDealt: 0, dmgRecv: 0, kills: 0 };
-    // aggregate cumulative stats for this ally team at this frame
-    cur.metal += Number(row.MetalProduced ?? 0);
-    cur.dmgDealt += Number(row.DamageDealt ?? 0);
-    cur.dmgRecv += Number(row.DamageReceived ?? 0);
-    cur.kills += Number(row.UnitsKilled ?? 0);
-    frameMap.set(ally, cur);
-  }
-
-  const frames = [...byFrame.keys()].sort((a, b) => a - b);
-  // exclude very short games
-  if (frames.length < 3) {
-    console.log("game too short, skipping scoring");
-    return null;
-  }
-
-  // compute comeback
-  let maxDeficitPct = 0;
-  let deficitFrame = 0;
-  let maxDps = 0;
-  let dpsFrame = 0;
-  const series = [];
-
-  let prevTotalDmg = 0;
-  let prevFrame = frames[0];
-
-  for (const f of frames) {
-    const m = byFrame.get(f);
-    const win = m.get(winner) ?? { metal: 0, dmgDealt: 0, dmgRecv: 0, kills: 0 };
-    const lose = m.get(loser) ?? { metal: 0, dmgDealt: 0, dmgRecv: 0, kills: 0 };
-    const total = win.metal + lose.metal;
-    const winShare = total > 0 ? win.metal / total : 0.5;
-    series.push({ frame: f, winShare });
-
-    // winner behind economically at this point?
-    if (lose.metal > win.metal && lose.metal > 0) {
-      const deficit = ((lose.metal - win.metal) / lose.metal) * 100;
-      if (deficit > maxDeficitPct) {
-        maxDeficitPct = deficit;
-        deficitFrame = f;
-      }
+  // --- big battle: largest single-interval combined damage jump vs. the average jump ---
+  let maxJump = 0,
+    jumps = [],
+    maxJumpAt = null;
+  for (let i = 1; i < series.length; i++) {
+    const prev = series[i - 1],
+      cur = series[i];
+    const dmgJump = cur.dmgA - prev.dmgA + (cur.dmgB - prev.dmgB);
+    jumps.push(dmgJump);
+    if (dmgJump > maxJump) {
+      maxJump = dmgJump;
+      maxJumpAt = cur.t;
     }
-
-    const totalDmg = win.dmgDealt + lose.dmgDealt;
-    const dt = (f - prevFrame) / FRAME_RATE;
-    if (dt > 0) {
-      const dps = (totalDmg - prevTotalDmg) / dt;
-      if (dps > maxDps) {
-        maxDps = dps;
-        dpsFrame = f;
-      }
-    }
-    prevTotalDmg = totalDmg;
-    prevFrame = f;
   }
+  const avgJump = jumps.reduce((a, b) => a + b, 0) / Math.max(1, jumps.length);
+  const battleRatio = avgJump > 0 ? maxJump / avgJump : 0;
+  const bigBattle = battleRatio >= 2.6 && maxJump > 200;
+  const battleMagnitude = Math.min(1, (battleRatio - 2.6) / 3);
 
-  const last = byFrame.get(frames[frames.length - 1]);
-  const winFinal = last.get(winner) ?? { dmgDealt: 0, kills: 0 };
-  const loseFinal = last.get(loser) ?? { dmgDealt: 0, kills: 0 };
-  const killRatio =
-    Math.max(winFinal.kills, loseFinal.kills) > 0
-      ? Math.min(winFinal.kills, loseFinal.kills) / Math.max(winFinal.kills, loseFinal.kills)
-      : 0;
+  // --- upset: meaningful skill gap, lower-skill side won ---
+  const skillGap = Math.abs(teamA.skill - teamB.skill);
+  const lowerSkillTeam = teamA.skill < teamB.skill ? "A" : "B";
+  const upset = skillGap >= 5 && winner === lowerSkillTeam;
+  const upsetMagnitude = Math.min(1, skillGap / 15);
 
-  const avgSkill = (allyId) => {
-    const arr = skillByAlly.get(allyId) ?? [0];
-    return arr.reduce((a, b) => a + b, 0) / arr.length;
+  // --- fast start / eco race: strong divergence inside the first 20% of the game ---
+  const earlyCutoff = durationMin * 0.2;
+  const earlyPoint =
+    series.find((p) => p.t >= earlyCutoff) || series[1] || last;
+  const earlyGap = Math.abs(earlyPoint.leadPct - 0.5);
+  const ecoRace = earlyGap >= 0.18;
+  const ecoRaceMagnitude = Math.min(1, earlyGap / 0.35);
+
+  const flags = { comeback, closeFinish, bigBattle, upset, ecoRace };
+  const magnitudes = {
+    comeback: comebackMagnitude,
+    closeFinish: closeMagnitude,
+    bigBattle: battleMagnitude,
+    upset: upsetMagnitude,
+    ecoRace: ecoRaceMagnitude,
   };
-  // positive => winner was the underdog
-  const skillGap = avgSkill(loser) - avgSkill(winner); 
 
-  const durationMin = match.durationMs / 60000;
-
-  const badges = [];
-  let score = 20;
-
-  // comeback: winner was significantly behind in economy, and not right at the start
-  const comebackLate = deficitFrame / FRAME_RATE / 60 > 5; // after the 5 min mark
-  if (maxDeficitPct > 20 && comebackLate) {
-    badges.push("comeback");
-    score += Math.min(35, maxDeficitPct * 0.9);
+  // weighted spectate score, 0-100
+  const weights = {
+    comeback: 34,
+    closeFinish: 26,
+    bigBattle: 22,
+    upset: 30,
+    ecoRace: 6,
+  };
+  let score = 0;
+  for (const k of Object.keys(weights)) {
+    if (flags[k]) score += weights[k] * (0.5 + 0.5 * magnitudes[k]);
   }
-
-  // big battle: damage-per-second spike relative to game length
-  const dpsScore = Math.min(25, maxDps / 400);
-  if (maxDps > 3000) {
-    badges.push("battle");
-    score += dpsScore;
-  }
-
-  // nailbiter: kills close to even at the end, longish game
-  if (killRatio > 0.75 && durationMin > 20) {
-    badges.push("nailbiter");
-    score += 20;
-  }
-
-  // upset: underdog (lower skill) won
-  if (skillGap > 3) {
-    badges.push("upset");
-    score += Math.min(20, skillGap * 2);
-  }
-
-  if (badges.length === 0 && durationMin > 15) {
-    score += 5; // long clean game, mild credit
-  }
-  if (killRatio < 0.15 && durationMin < 8) {
-    badges.push("stomp");
-    score -= 10;
-  }
-
+  // sweet-spot duration bonus (most watchable games run 15-40 min)
+  if (durationMin >= 15 && durationMin <= 40) score += 6;
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   return {
+    flags,
+    magnitudes,
     score,
-    badges,
-    series,
-    maxDeficitPct: Math.round(maxDeficitPct),
-    deficitClock: frameToClock(deficitFrame),
-    maxDps: Math.round(maxDps),
-    dpsClock: frameToClock(dpsFrame),
-    killRatio,
-    skillGap: Math.round(skillGap * 10) / 10,
-    winnerAllyId: winner,
+    maxJumpAt,
+    worstDeficit,
+    finalGap,
+    skillGap,
   };
 }
