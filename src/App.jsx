@@ -30,7 +30,7 @@ import {
 } from "./utils/globalVars.js";
 
 /* ============================================================
-   DEMO MODE: hand-built matches with synthetic per-minute
+   DEMO MODE: fake built matches with synthetic per-minute
    telemetry so the scoring logic is visible and tunable without
    a live connection.
  
