@@ -1,4 +1,5 @@
 import { buildSeries } from "./buildSeries.js";
+import { FRAMES_PER_SECOND, CUMULATIVE } from "./globalVars.js";
 /**
  * Token bucket matching gex's stated policy: starts with 300 requests,
  * refills 60/min (1/sec) up to 300.
@@ -188,7 +189,8 @@ export async function fetchLiveMatches(baseUrl, filters, setProgress) {
       console.log("built match", built);
       await cacheSet(cacheKey, built);
       results.push(built);
-    } catch {
+    } catch (e) {
+      console.log("Error processing match:", e);
       // skip matches we fail to fetch/parse — keep the batch resilient
       continue;
     }
