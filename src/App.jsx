@@ -331,9 +331,8 @@ export default function App() {
         {/* results */}
         <section style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtered.length === 0 && !loading && (
-            <div className="no-match">
-              nothing matches these filters — loosen a milestone toggle or lower
-              the score floor
+            <div className="no-matches">
+              No matches to display — scan for matches or loosen filter settings
             </div>
           )}
           {filtered.map((m) => (
@@ -351,10 +350,7 @@ export default function App() {
         </section>
 
         <footer className="scoring-tooltip">
-          scoring: comeback = winner was ever &gt;13pts behind in eco share ·
-          photo finish = final eco share within 6pts on a 12m+ game · big battle
-          = a damage spike &gt;2.6x the game's average burst · upset = 5+
-          skill-gap team lost. weights are tunable in
+          by <a href="https://github.com/CutelilCucumber">cutelilcucumber</a>
         </footer>
       </main>
     </div>

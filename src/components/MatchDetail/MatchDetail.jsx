@@ -114,9 +114,17 @@ export function MatchDetail({ match, analysis }) {
         href={`https://gex.honu.pw/match/${match.id}`}
         target="_blank"
         rel="noreferrer"
-        className="gex-link"
+        className="link"
       >
         Open in Gex <ExternalLink size={13} />
+      </a>
+      <a
+        href={`https://www.beyondallreason.info/replays?gameId=${match.id}`}
+        target="_blank"
+        rel="noreferrer"
+        className="link"
+      >
+        Replay Page <ExternalLink size={13} />
       </a>
     </div>
   );

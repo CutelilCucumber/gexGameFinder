@@ -20,10 +20,12 @@
   --color-close: #6fa8dc;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  min-height: 100%;
 }
-
 ::selection {
   background: var(--color-eco) 33;
 }
