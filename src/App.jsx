@@ -350,7 +350,8 @@ export default function App() {
         </section>
 
         <footer className="scoring-tooltip">
-          by <a href="https://github.com/CutelilCucumber">cutelilcucumber</a>
+          a tool by{" "}
+          <a href="https://github.com/CutelilCucumber">cutelilcucumber</a>
         </footer>
       </main>
     </div>
