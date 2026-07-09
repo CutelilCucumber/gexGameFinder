@@ -1,4 +1,4 @@
-import { COLORS } from "../utils/globalVars.js";
+import { COLORS } from "../../utils/globalVars.js";
 import {
   AreaChart,
   Area,
@@ -10,7 +10,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ExternalLink } from "lucide-react";
-import { Stat } from "./index";
+import { Stat } from "../ui/Stat.jsx";
+import "./MatchDetail.css";
 
 export function MatchDetail({ match, analysis }) {
   const data = match.series;
@@ -19,14 +20,8 @@ export function MatchDetail({ match, analysis }) {
       ? data.find((p) => p.t === analysis.maxJumpAt)
       : null;
   return (
-    <div
-      style={{
-        padding: "16px 20px 20px",
-        borderTop: `1px solid ${COLORS.line}`,
-        background: COLORS.panel2,
-      }}
-    >
-      <div style={{ height: 190 }}>
+    <div className="detail-container">
+      <div className="chart-container">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
@@ -93,14 +88,7 @@ export function MatchDetail({ match, analysis }) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px,1fr))",
-          gap: 14,
-          marginTop: 6,
-        }}
-      >
+      <div className="stat-container">
         <Stat
           label="Winner's worst deficit"
           value={`${Math.round(analysis.worstDeficit * 100)}% eco share`}
@@ -126,20 +114,7 @@ export function MatchDetail({ match, analysis }) {
         href={`https://gex.honu.pw/match/${match.id}`}
         target="_blank"
         rel="noreferrer"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          marginTop: 14,
-          fontSize: 12.5,
-          color: COLORS.ink,
-          textDecoration: "none",
-          fontFamily: "'Inter', sans-serif",
-          fontWeight: 500,
-          border: `1px solid ${COLORS.line}`,
-          padding: "6px 12px",
-          borderRadius: 7,
-        }}
+        className="gex-link"
       >
         Open in Gex <ExternalLink size={13} />
       </a>

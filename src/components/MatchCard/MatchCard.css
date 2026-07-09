@@ -1,0 +1,73 @@
+.match-container {
+  position: relative;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 120ms ease;
+}
+
+.save-action {
+  position: absolute;
+  z-index: 1;
+  cursor: pointer;
+  top: 5px;
+  right: 5px;
+  display: none;
+}
+
+.match-container:hover .save-action {
+  display: block;
+}
+
+.show-detail {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.title-container {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.title-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.title-map {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 15.5px;
+  color: var(--color-ink);
+}
+.title-detail {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.badge-container {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+  flex-wrap: wrap;
+}
+.no-badge {
+  font-size: 11.5px;
+  color: var(--color-faint);
+  font-family: "Inter", sans-serif;
+}
+.miniSparkline-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}

@@ -1,0 +1,28 @@
+.detail-container {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-panel2);
+}
+.stat-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+.chart-container {
+  height: 190px;
+}
+.gex-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--color-ink);
+  text-decoration: none;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  border: 1px solid var(--color-line);
+  padding: 6px 12px;
+  border-radius: 7px;
+}

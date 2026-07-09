@@ -1,0 +1,36 @@
+* {
+  box-sizing: border-box;
+  font-family: "Space Grotesk", "Inter", sans-serif;
+
+  /* Background Colors */
+  --color-bg: #0b0f0d;
+  --color-panel: #121815;
+  --color-panel2: #182019;
+  --color-line: #233029;
+
+  /* Text/Ink Colors */
+  --color-ink: #e7ece7;
+  --color-muted: #7c8f86;
+  --color-faint: #4b5a53;
+
+  /* Status/Action Colors */
+  --color-eco: #4fd1a5;
+  --color-combat: #e2543d;
+  --color-upset: #d9a441;
+  --color-close: #6fa8dc;
+}
+
+body {
+  margin: 0;
+}
+
+::selection {
+  background: var(--color-eco) 33;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-eco);
+  outline-offset: 2px;
+}

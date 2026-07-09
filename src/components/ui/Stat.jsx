@@ -1,4 +1,4 @@
-import { COLORS } from "../utils/globalVars.js";
+import { COLORS } from "../../utils/globalVars.js";
 export function Stat({ label, value, color }) {
   return (
     <div>

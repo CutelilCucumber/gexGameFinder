@@ -16,7 +16,7 @@ import {
   Settings2,
   Flame,
 } from "lucide-react";
-import { MatchCard } from "./components";
+import { MatchCard } from "./components/MatchCard/MatchCard.jsx";
 import { analyzeMatch } from "./utils/analyzeMatch.js";
 import { fetchLiveMatches } from "./utils/api.js";
 import {
@@ -27,20 +27,7 @@ import {
   CUMULATIVE,
   FRAMES_PER_SECOND,
 } from "./utils/globalVars.js";
-
-/* ============================================================
-   SAVED MODE: fake built matches with synthetic per-minute
-   telemetry so the scoring logic is visible and tunable without
-   a live connection.
- 
-   SCAN: queries a gex-compatible API
-   (https://github.com/varunda/gex) at /api/match/recent and
-   /api/game-event/{id}?includeTeamStats=true, buckets the raw
-   per-frame GameEventTeamStats into per-minute team series, and
-   runs the same scoring engine. Results are cached via
-   window.storage so repeat visits don't re-fetch already-seen
-   matches.
-   ============================================================ */
+import "./App.css";
 
 export default function App() {
   const [mode, setMode] = useState("saved"); // "saved" | "scan"
@@ -181,86 +168,28 @@ export default function App() {
   }
 
   return (
-    <div
-      style={{
-        background: COLORS.bg,
-        minHeight: "100%",
-        color: COLORS.ink,
-        fontFamily: "'Inter', sans-serif",
-        padding: "8px 20px 60px",
-      }}
-    >
-      <style>{`
-        * { box-sizing: border-box;
-        font-family: Space Grotesk, Inter, sans-serif; }
-         }
-        ::selection { background: ${COLORS.eco}33; }
-        button:focus-visible, input:focus-visible, select:focus-visible {
-          outline: 2px solid ${COLORS.eco}; outline-offset: 2px;
-        }
-      `}</style>
-
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <div className="page-container">
+      <div className="page">
         {/* header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            marginBottom: 22,
-          }}
-        >
+        <div className="header-container">
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div className="page-title-container">
               <Flame size={20} color={COLORS.combat} />
-              <h1
-                style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 26,
-                  margin: 0,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Fire Replay Finder
-              </h1>
+              <h1>Fire Replay Finder</h1>
             </div>
-            <p
-              style={{
-                margin: "4px 0 0 29px",
-                color: COLORS.muted,
-                fontSize: 13.5,
-              }}
-            >
+            <p className="sub-header">
               scores Beyond All Reason replays for comebacks, photo finishes,
               big fights, and upsets · built on{" "}
-              <span style={{ color: COLORS.ink }}>gex</span>
+              <a href="https://gex.honu.pw/">gex</a>
             </p>
           </div>
-          <div
-            style={{
-              display: "flex",
-              background: COLORS.panel,
-              border: `1px solid ${COLORS.line}`,
-              borderRadius: 8,
-              padding: 3,
-            }}
-          >
+          <div className="mode-switch">
             {["saved", "scan"].map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
+                className="mode-switch-button"
                 style={{
-                  all: "unset",
-                  cursor: "pointer",
-                  padding: "6px 14px",
-                  borderRadius: 6,
-                  fontSize: 12.5,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontWeight: 600,
-                  letterSpacing: "0.03em",
                   background: mode === m ? COLORS.eco : "transparent",
                   color: mode === m ? COLORS.bg : COLORS.muted,
                 }}
@@ -273,19 +202,7 @@ export default function App() {
 
         {/* live controls */}
         {mode === "scan" && (
-          <div
-            style={{
-              background: COLORS.panel,
-              border: `1px solid ${COLORS.line}`,
-              borderRadius: 10,
-              padding: 14,
-              marginBottom: 18,
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-              alignItems: "center",
-            }}
-          >
+          <div className="param-filter">
             <Settings2 size={15} color={COLORS.muted} />
             <label>
               Gamemode:
@@ -297,16 +214,6 @@ export default function App() {
                     gamemode: Number(e.target.value),
                   })
                 }
-                style={{
-                  width: 70,
-                  background: COLORS.panel,
-                  border: `1px solid ${COLORS.line}`,
-                  borderRadius: 6,
-                  padding: "7px 10px",
-                  color: COLORS.ink,
-                  fontSize: 12.5,
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
               >
                 <option value="">Any</option>
                 <option value="1">Duel</option>
@@ -328,16 +235,7 @@ export default function App() {
                     minDurationMinutes: Number(e.target.value),
                   })
                 }
-                style={{
-                  width: 70,
-                  background: COLORS.panel,
-                  border: `1px solid ${COLORS.line}`,
-                  borderRadius: 6,
-                  padding: "7px 10px",
-                  color: COLORS.ink,
-                  fontSize: 12.5,
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
+                className="field-filter"
               />
             </label>
             <label>
@@ -351,16 +249,7 @@ export default function App() {
                     minimumAverageOS: Number(e.target.value),
                   })
                 }
-                style={{
-                  width: 70,
-                  background: COLORS.panel,
-                  border: `1px solid ${COLORS.line}`,
-                  borderRadius: 6,
-                  padding: "7px 10px",
-                  color: COLORS.ink,
-                  fontSize: 12.5,
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
+                className="field-filter"
               />
             </label>
             <label>
@@ -376,36 +265,13 @@ export default function App() {
                     limit: Number(e.target.value),
                   })
                 }
-                style={{
-                  width: 70,
-                  background: COLORS.panel,
-                  border: `1px solid ${COLORS.line}`,
-                  borderRadius: 6,
-                  padding: "7px 10px",
-                  color: COLORS.ink,
-                  fontSize: 12.5,
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
+                className="field-filter"
               />
             </label>
             <button
               onClick={runLiveSearch}
               disabled={loading}
-              style={{
-                all: "unset",
-                cursor: loading ? "default" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                background: COLORS.eco,
-                color: COLORS.bg,
-                padding: "8px 14px",
-                borderRadius: 7,
-                fontSize: 12.5,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-                opacity: loading ? 0.6 : 1,
-              }}
+              className="scan-button"
             >
               {loading ? (
                 <Loader2
@@ -421,46 +287,15 @@ export default function App() {
             <button
               onClick={handleSaveAll}
               disabled={saved && matches.length === 0}
-              style={{
-                all: "unset",
-                cursor: saved ? "default" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                background: COLORS.eco,
-                color: COLORS.bg,
-                padding: "8px 14px",
-                borderRadius: 7,
-                fontSize: 12.5,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-                opacity: saved ? 0.6 : 1,
-              }}
+              className="scan-button"
             >
               {saved ? "Saved" : "Save batch"}
             </button>
-            {/* <span style={{ fontSize: 11.5, color: COLORS.faint }}>
-              results cache per match — re-scans skip what's already analyzed
-            </span> */}
           </div>
         )}
 
         {error && (
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "flex-start",
-              background: `${COLORS.combat}12`,
-              border: `1px solid ${COLORS.combat}44`,
-              borderRadius: 9,
-              padding: "12px 14px",
-              marginBottom: 18,
-              fontSize: 12.5,
-              color: COLORS.ink,
-              lineHeight: 1.5,
-            }}
-          >
+          <div className="error">
             <AlertTriangle
               size={15}
               color={COLORS.combat}
@@ -470,16 +305,8 @@ export default function App() {
           </div>
         )}
 
-        {/* filter bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
+        {/* milestone bar */}
+        <div className="milestone-container">
           {MILESTONES.map((m) => {
             const active = activeFilters.has(m.key);
             const Icon = m.icon;
@@ -487,40 +314,14 @@ export default function App() {
               <button
                 key={m.key}
                 onClick={() => toggleFilter(m.key)}
-                style={{
-                  all: "unset",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "6px 11px",
-                  borderRadius: 999,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  fontFamily: "'Inter', sans-serif",
-                  border: `1px solid ${active ? m.color : COLORS.line}`,
-                  background: active ? `${m.color}20` : "transparent",
-                  color: active ? m.color : COLORS.muted,
-                }}
+                className="milestone-button"
               >
                 <Icon size={12.5} /> {m.label}
               </button>
             );
           })}
           <div style={{ flex: 1 }} />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{
-              background: COLORS.panel,
-              border: `1px solid ${COLORS.line}`,
-              color: COLORS.ink,
-              borderRadius: 7,
-              padding: "6px 10px",
-              fontSize: 12,
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="score">sort: spectate score</option>
             <option value="recent">sort: most recent</option>
             <option value="duration">sort: longest</option>
@@ -530,14 +331,7 @@ export default function App() {
         {/* results */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtered.length === 0 && !loading && (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "40px 0",
-                color: COLORS.faint,
-                fontSize: 13,
-              }}
-            >
+            <div className="match-container">
               nothing matches these filters — loosen a milestone toggle or lower
               the score floor
             </div>
@@ -556,14 +350,7 @@ export default function App() {
           ))}
         </div>
 
-        <div
-          style={{
-            marginTop: "auto",
-            fontSize: 11,
-            color: COLORS.faint,
-            lineHeight: 1.6,
-          }}
-        >
+        <div className="scoring-tooltip">
           scoring: comeback = winner was ever &gt;13pts behind in eco share ·
           photo finish = final eco share within 6pts on a 12m+ game · big battle
           = a damage spike &gt;2.6x the game's average burst · upset = 5+

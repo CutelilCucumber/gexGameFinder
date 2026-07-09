@@ -1,4 +1,4 @@
-import { COLORS } from "../utils/globalVars";
+import { COLORS } from "../../utils/globalVars";
 
 export function ScoreDial({ score }) {
   const r = 22,

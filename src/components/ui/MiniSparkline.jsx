@@ -1,4 +1,4 @@
-import { COLORS } from "../utils/globalVars.js";
+import { COLORS } from "../../utils/globalVars.js";
 
 export function MiniSparkline({ series, width = 220, height = 46, winner }) {
   const w = width,
