@@ -1,19 +1,62 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronRight, Save, Trash2 } from "lucide-react";
 import { MILESTONES, COLORS, GAMEMODES } from "../utils/globalVars";
 import { ScoreDial, Badge, MiniSparkline, MatchDetail } from "./index";
 
-export function MatchCard({ match, analysis, expanded, onToggle }) {
+export function MatchCard({
+  match,
+  analysis,
+  expanded,
+  isSaved,
+  onToggle,
+  onSave,
+  onDelete,
+}) {
+  const [isHovered, setIsHovered] = useState(false);
   const activeMilestones = MILESTONES.filter((m) => analysis.flags[m.key]);
+
   return (
     <div
       style={{
+        position: "relative",
         background: COLORS.panel,
         border: `1px solid ${COLORS.line}`,
         borderRadius: 12,
         overflow: "hidden",
         transition: "border-color 120ms ease",
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {isSaved ? (
+        <Trash2
+          size={16}
+          color={COLORS.combat}
+          onClick={onDelete}
+          style={{
+            position: "absolute",
+            zIndex: 1,
+            cursor: "pointer",
+            top: "5px",
+            right: "5px",
+            display: isHovered ? "block" : "none",
+          }}
+        />
+      ) : (
+        <Save
+          size={16}
+          color={COLORS.eco}
+          onClick={onSave}
+          style={{
+            position: "absolute",
+            zIndex: 1,
+            cursor: "pointer",
+            top: "5px",
+            right: "5px",
+            display: isHovered ? "block" : "none",
+          }}
+        />
+      )}
       <button
         onClick={onToggle}
         style={{
@@ -54,7 +97,8 @@ export function MatchCard({ match, analysis, expanded, onToggle }) {
                 color: COLORS.muted,
               }}
             >
-              {GAMEMODES[match.gamemode]} · {match.durationMin}m · {match.playerCount}p
+              {GAMEMODES[match.gamemode]} · {match.durationMin}m ·{" "}
+              {match.playerCount}p
             </span>
           </div>
           <div

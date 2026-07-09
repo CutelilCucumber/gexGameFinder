@@ -61,16 +61,17 @@ export default function App() {
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [minScore, setMinScore] = useState(0);
   const [sortBy, setSortBy] = useState("score");
+  const [loadCount, setLoadCount] = useState(0);
 
   useEffect(() => {
     if (mode === "saved") {
       const cachedMatches = localStorage.getItem("cachedMatches");
-      if (cachedMatches) setMatches(JSON.parse(cachedMatches));
+      setMatches(cachedMatches ? JSON.parse(cachedMatches) : []);
     } else {
       setMatches(newMatches);
     }
     setLoading(false);
-  }, [mode, newMatches]);
+  }, [mode, newMatches, loadCount]);
 
   const analyses = useMemo(() => {
     const map = {};
@@ -112,12 +113,12 @@ export default function App() {
       );
       if (results.length === 0)
         setError("Connected, but no matches were found with this criteria.");
+      setSaved(false);
       setNewMatches(results);
     } catch (e) {
       setError(`${e.message}`);
     } finally {
       setLoading(false);
-      setSaved(false);
       setProgress("");
     }
   }, [GEX_API_BASE, loadParams]);
@@ -130,25 +131,54 @@ export default function App() {
     });
   };
 
-  const handleSave = useCallback(async () => {
-    let cachedMatches = [];
-    const cache = localStorage.getItem("cachedMatches");
-    if (cache) cachedMatches = JSON.parse(cache);
-    const combined = [
-      ...cachedMatches,
-      ...matches.filter(
-        (match) =>
-          !cachedMatches.some(
-            (cachedMatch) => cachedMatch.id === match.id, // Replace 'id' with your unique identifier
-          ),
-      ),
-    ];
-
-    localStorage.setItem("cachedMatches", JSON.stringify(combined));
-
+  const handleSaveAll = () => {
+    matches.forEach((matchId) => {
+      handleSave(matchId);
+    });
     setSaved(true);
-    setMode("saved");
-  });
+  };
+
+  const handleSave = (match) => {
+    if (inCache(match.id)) {
+      setError("Match: " + match.id + " is already saved");
+      return;
+    }
+    const cache = localStorage.getItem("cachedMatches");
+    const cachedMatches = cache ? JSON.parse(cache) : [];
+
+    const updatedMatches = [...cachedMatches, match];
+    try {
+      localStorage.setItem("cachedMatches", JSON.stringify(updatedMatches));
+      setLoadCount(loadCount + 1);
+    } catch (e) {
+      setError(e);
+    }
+  };
+
+  const handleDelete = (matchID) => {
+    if (!inCache(matchID)) {
+      setError("Match: " + match.id + " has not been saved");
+      return;
+    }
+
+    const cache = localStorage.getItem("cachedMatches");
+    const cachedMatches = cache ? JSON.parse(cache) : [];
+
+    const updatedMatches = cachedMatches.filter((m) => m.id !== matchID);
+
+    try {
+      localStorage.setItem("cachedMatches", JSON.stringify(updatedMatches));
+      setLoadCount(loadCount + 1);
+    } catch (e) {
+      setError(e);
+    }
+  };
+
+  function inCache(matchID) {
+    const cache = localStorage.getItem("cachedMatches");
+    const cachedMatches = cache ? JSON.parse(cache) : [];
+    return cachedMatches.some((m) => m.id === matchID);
+  }
 
   return (
     <div
@@ -389,7 +419,7 @@ export default function App() {
               {loading ? progress || "working…" : "Scan recent matches"}
             </button>
             <button
-              onClick={handleSave}
+              onClick={handleSaveAll}
               disabled={saved && matches.length === 0}
               style={{
                 all: "unset",
@@ -407,11 +437,11 @@ export default function App() {
                 opacity: saved ? 0.6 : 1,
               }}
             >
-              {saved ? "Saved" : "Save this batch"}
+              {saved ? "Saved" : "Save batch"}
             </button>
-            <span style={{ fontSize: 11.5, color: COLORS.faint }}>
+            {/* <span style={{ fontSize: 11.5, color: COLORS.faint }}>
               results cache per match — re-scans skip what's already analyzed
-            </span>
+            </span> */}
           </div>
         )}
 
@@ -519,6 +549,9 @@ export default function App() {
               analysis={analyses[m.id]}
               expanded={expandedId === m.id}
               onToggle={() => setExpandedId(expandedId === m.id ? null : m.id)}
+              isSaved={inCache(m.id)}
+              onSave={() => handleSave(m)}
+              onDelete={() => handleDelete(m.id)}
             />
           ))}
         </div>
