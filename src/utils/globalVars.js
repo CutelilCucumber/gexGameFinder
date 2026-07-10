@@ -10,7 +10,7 @@ export const MILESTONES = [
   },
   {
     key: "closeFinish",
-    label: "Photo finish",
+    label: "Close finish",
     icon: Radio,
     color: "--color-close",
   },
@@ -21,7 +21,7 @@ export const MILESTONES = [
     color: "--color-combat",
   },
   { key: "upset", label: "Upset", icon: Crown, color: "--color-upset" },
-  { key: "ecoRace", label: "Fast start", icon: Zap, color: "--color-eco" },
+  { key: "ecoRace", label: "Fast eco", icon: Zap, color: "--color-eco" },
 ];
 
 export const COLORS = {

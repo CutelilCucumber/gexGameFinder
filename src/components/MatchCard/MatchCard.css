@@ -38,6 +38,7 @@
 
 .title-info {
   display: flex;
+  flex-direction: column;
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
