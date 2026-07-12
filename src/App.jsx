@@ -18,15 +18,15 @@ import {
 } from "lucide-react";
 import { MatchCard } from "./components/MatchCard/MatchCard.jsx";
 import { analyzeMatch } from "./utils/analyzeMatch.js";
-import { fetchLiveMatches } from "./utils/api.js";
+import { fetchLiveMatches } from "./utils/matchData.js";
 import {
   GEX_API_BASE,
   COLORS,
   FONT_IMPORT,
   CUMULATIVE,
-  FRAMES_PER_SECOND,
-  MILESTONES,
+  FRAMES_PER_SECOND
 } from "./utils/globalVars.js";
+import {MILESTONES} from "./utils/awards.js" 
 import "./App.css";
 
 export default function App() {
@@ -52,7 +52,7 @@ export default function App() {
 
   useEffect(() => {
     if (mode === "saved") {
-      const cachedMatches = localStorage.getItem("cachedMatches");
+      const cachedMatches = localStorage.getItem("saved-matches");
       setMatches(cachedMatches ? JSON.parse(cachedMatches) : []);
     } else {
       setMatches(newMatches);
@@ -139,12 +139,12 @@ export default function App() {
       setError("Match: " + match.id + " is already saved");
       return;
     }
-    const cache = localStorage.getItem("cachedMatches");
+    const cache = localStorage.getItem("saved-matches");
     const cachedMatches = cache ? JSON.parse(cache) : [];
 
     const updatedMatches = [...cachedMatches, match];
     try {
-      localStorage.setItem("cachedMatches", JSON.stringify(updatedMatches));
+      localStorage.setItem("saved-matches", JSON.stringify(updatedMatches));
       setLoadCount(loadCount + 1);
     } catch (e) {
       setError(e);
@@ -157,13 +157,13 @@ export default function App() {
       return;
     }
 
-    const cache = localStorage.getItem("cachedMatches");
+    const cache = localStorage.getItem("saved-matches");
     const cachedMatches = cache ? JSON.parse(cache) : [];
 
     const updatedMatches = cachedMatches.filter((m) => m.id !== matchID);
 
     try {
-      localStorage.setItem("cachedMatches", JSON.stringify(updatedMatches));
+      localStorage.setItem("saved-matches", JSON.stringify(updatedMatches));
       setLoadCount(loadCount + 1);
     } catch (e) {
       setError(e);
@@ -171,7 +171,7 @@ export default function App() {
   };
 
   function inCache(matchID) {
-    const cache = localStorage.getItem("cachedMatches");
+    const cache = localStorage.getItem("saved-matches");
     const cachedMatches = cache ? JSON.parse(cache) : [];
     return cachedMatches.some((m) => m.id === matchID);
   }

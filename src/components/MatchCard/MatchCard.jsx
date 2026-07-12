@@ -6,7 +6,9 @@ import {
   Trash2,
   FileWarningIcon,
 } from "lucide-react";
-import { MILESTONES, COLORS, GAMEMODES } from "../../utils/globalVars";
+
+import {MILESTONES} from "../../utils/awards.js" 
+import { COLORS, GAMEMODES } from "../../utils/globalVars";
 import { MatchDetail } from "../MatchDetail/MatchDetail.jsx";
 import { ScoreDial } from "../ui/ScoreDial.jsx";
 import { Badge } from "../ui/Badge.jsx";

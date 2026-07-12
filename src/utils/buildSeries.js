@@ -18,7 +18,7 @@ function buildSeries(points) {
 }
 
 export function bucketFrameStatsToSeries(
-  teamStats,
+  eventJson,
   players,
   allyTeams,
   durationMin,
@@ -32,6 +32,8 @@ export function bucketFrameStatsToSeries(
    * @param {number} durationMin - Total duration of the game in minutes
    * @returns {Array} Time-series data in format [{t, ecoA, ecoB, dmgA, dmgB, leadPct}, ...]
    */
+
+  const { teamStats, extraStats, unitsCreated, unitsKilled, unitDamage, unitResources, factoryUnitCreated, windUpdates, teamDiedEvents, commanderPositionUpdates } = eventJson;
 
   // Create a mapping from teamID to allyTeamID for quick lookup
   const teamToAlly = {};

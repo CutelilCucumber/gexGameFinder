@@ -1,28 +1,3 @@
-import { TrendingUp, Radio, Swords, Crown, Zap } from "lucide-react";
-
-export const MILESTONES = [
-  {
-    key: "comeback",
-    label: "Comeback",
-    icon: TrendingUp,
-    color: "--color-eco",
-  },
-  {
-    key: "closeFinish",
-    label: "Close finish",
-    icon: Radio,
-    color: "--color-close",
-  },
-  {
-    key: "bigBattle",
-    label: "Big battle",
-    icon: Swords,
-    color: "--color-combat",
-  },
-  { key: "upset", label: "Upset", icon: Crown, color: "--color-upset" },
-  { key: "ecoRace", label: "Fast eco", icon: Zap, color: "--color-eco" },
-];
-
 export const COLORS = {
   bg: "#0b0f0d",
   panel: "#121815",

@@ -1,0 +1,164 @@
+import { TrendingUp, Radio, Swords, Crown, Zap } from "lucide-react";
+
+export const MILESTONES = [
+  {
+    key: "bigBattle",
+    label: "Big Battle",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 0,
+    description: "Rework: Sharp declines in army value for both teams."
+  },
+  {
+    key: "comeback",
+    label: "Comeback",
+    icon: TrendingUp,
+    color: "--color-eco",
+    weight: 3,
+    description: "Winning team once far behind on army value."
+  },
+  {
+    key: "backAndForth",
+    label: "Back and Forth",
+    icon: TrendingUp,
+    color: "--color-eco",
+    weight: 2,
+    description: "Constant momentum shifts add to score."
+  },
+  {
+    key: "stomp",
+    label: "Stomp",
+    icon: Crown,
+    color: "--color-upset",
+    weight: -2,
+    description: "Heavily one-sided."
+  },
+  {
+    key: "quickForfeit",
+    label: "Quick Forfeit",
+    icon: Radio,
+    color: "--color-close",
+    weight: -2,
+    description: "Premature forfeits reduce points, weighted more for large teams."
+  },
+  {
+    key: "baseRace",
+    label: "Base Race",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 2,
+    description: "Huge building damage for both teams relative to match size."
+  },
+  {
+    key: "guerillaFighters",
+    label: "Guerilla Fighters",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 2,
+    description: "High average damage per metal / combat efficiency."
+  },
+  {
+    key: "carpelTunnel",
+    label: "Carpel Tunnel",
+    icon: Zap,
+    color: "--color-eco",
+    weight: 2,
+    description: "High average player APM."
+  },
+  {
+    key: "windyDay",
+    label: "Windy Day",
+    icon: Zap,
+    color: "--color-eco",
+    weight: 0,
+    description: "Wind speed higher than average, worth no points."
+  },
+  {
+    key: "spaceRace",
+    label: "Space Race",
+    icon: Zap,
+    color: "--color-eco",
+    weight: 1,
+    description: "Close eco overall."
+  },
+  {
+    key: "legionEnabled",
+    label: "Legion Enabled",
+    icon: Zap,
+    color: "--color-eco",
+    weight: 0,
+    description: "Legion enabled, worth no points."
+  },
+  {
+    key: "earlyBombing",
+    label: "Early Bombing",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 1,
+    description: "At least 10 bombers built before 5 minutes."
+  },
+  {
+    key: "nailBiter",
+    label: "Nail Biter",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 2,
+    description: "One commander left on winning team."
+  },
+  {
+    key: "afusRush",
+    label: "AFUs Rush",
+    icon: Zap,
+    color: "--color-eco",
+    weight: 1,
+    description: "AFUs built relatively fast (e.g., 12 mins on 15 average wind speed), exclude metal maps."
+  },
+  {
+    key: "nukeRush",
+    label: "Nuke Rush",
+    icon: Zap,
+    color: "--color-eco",
+    weight: 1,
+    description: "Nukes built as fast as AFUs, exclude metal maps."
+  },
+  {
+    key: "orbitalCannons",
+    label: "Orbital Cannons",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 2,
+    description: "Ragnarok/Calamity/Starfall rush (e.g., 30 mins on 15 average wind speed) or 3+ total."
+  },
+  {
+    key: "techSpread",
+    label: "Tech Spread",
+    icon: TrendingUp,
+    color: "--color-eco",
+    weight: 3,
+    description: "Unit type diversity (bots, veh, air, sea, hov, amphib), weighted less for large games. Some units (commandos, bedbugs, spy bots) worth more."
+  },
+  {
+    key: "goliathDuel",
+    label: "Goliath Duel",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 3,
+    description: "T3 in a duel."
+  },
+  {
+    key: "commanderAttack",
+    label: "Commander Attack",
+    icon: Swords,
+    color: "--color-combat",
+    weight: 2,
+    description: "One team's commander moves into enemy start location."
+  },
+  {
+    key: "upset",
+    label: "Upset",
+    icon: Crown,
+    color: "--color-upset",
+    weight: 0,
+    description: "Noticable skill gap between teams."
+  }
+];
