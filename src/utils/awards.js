@@ -42,14 +42,14 @@ export const MILESTONES = [
     description:
       "Premature forfeits reduce points, weighted more for large teams.",
   },
-  {
-    key: "baseRace",
-    label: "Base Race",
-    icon: Swords,
-    color: "--color-combat",
-    weight: 2,
-    description: "Huge building damage for both teams relative to match size.",
-  },
+  //{
+  //  key: "baseRace",
+  //  label: "Base Race",
+  //  icon: Swords,
+  //  color: "--color-combat",
+  //  weight: 2,
+  //  description: "Huge building damage for both teams relative to match size.",
+  //},
   {
     key: "guerillaFighters",
     label: "Guerilla Fighters",
@@ -83,12 +83,12 @@ export const MILESTONES = [
     description: "Close eco between teams.",
   },
   {
-    key: "legionEnabled",
-    label: "Legion Enabled",
+    key: "legionMatch",
+    label: "Legion Match",
     icon: Zap,
     color: "--color-eco",
     weight: 0,
-    description: "Legion enabled, worth no points.",
+    description: "Legion faction present in this game",
   },
   {
     key: "earlyBombing",
@@ -108,7 +108,7 @@ export const MILESTONES = [
   },
   {
     key: "afusRush",
-    label: "AFUs Rush",
+    label: "AFUS Rush",
     icon: Zap,
     color: "--color-eco",
     weight: 1,
@@ -122,7 +122,7 @@ export const MILESTONES = [
     color: "--color-eco",
     weight: 1,
     description:
-      "AFUS built relatively fast (e.g., 12 mins on 15 average wind speed), exclude metal maps.",
+      "Nuke built relatively fast (e.g., 12 mins on 15 average wind speed), exclude metal maps.",
   },
   {
     key: "orbitalCannons",

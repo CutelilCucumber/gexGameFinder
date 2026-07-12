@@ -1,6 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+/* milestones and match titles */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+/* all defaults to roboto mono */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+/* Orbitron for page headers */
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap');
+/* all defaults to exo 2 */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+/* share tech mono for filters and inputs */
+
+
 * {
+  font-family: "Roboto Mono", "Inter", sans-serif;
   box-sizing: border-box;
-  font-family: "Space Grotesk", "Inter", sans-serif;
 
   /* Background Colors */
   --color-bg: #0b0f0d;

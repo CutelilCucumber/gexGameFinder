@@ -26,7 +26,7 @@
   gap: 9px;
 }
 h1 {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Orbitron", sans-serif;
   font-weight: 700;
   font-size: 26px;
   margin: 0;
@@ -47,6 +47,8 @@ a {
   border: 1px solid var(--color-line);
   border-radius: 8px;
   padding: 3px;
+  width: fit-content;
+  margin-bottom: 16px;
 }
 .mode-switch-button {
   all: unset;
@@ -59,15 +61,17 @@ a {
   letter-spacing: 0.03em;
 }
 .param-filter {
+  margin: 0;
   background: var(--color-panel);
   border: 1px solid var(--color-line);
   border-radius: 10px;
   padding: 14px;
-  margin-bottom: 18px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   align-items: center;
+
+  margin-bottom: 16px;
 }
 .param-filter select {
   width: 70px;
@@ -117,28 +121,27 @@ a {
   color: var(--color-ink);
   line-height: 1.5;
 }
-.milestone-container {
+.filter-container {
   display: flex;
   gap: 1rem; /* Adjust spacing between elements inside */
   width: 100%;
   max-width: 100%;
-  padding: 0.5rem;
 }
 
-.milestone-container .true {
-  flex-direction: row;
+.expanded {
+  flex-direction: column;
+}
+.badge-show{
+  cursor: pointer;
 }
 
 /* Style for the fieldset (badge-container) inside */
-.milestone-container .badge-container {
+.badge-container {
+  display: flex;
   padding: 0;
   margin: 0;
   border: none;
-  background: transparent;
   width: 100%;
-  cursor: pointer;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-line);
 }
 .milestone-button {
   all: unset;
@@ -152,14 +155,12 @@ a {
   font-weight: 600;
   font-family: "Inter", sans-serif;
 }
-.milestone-container select {
+.filter-container select {
   background: var(--color-panel);
   border: 1px solid var(--color-line);
   color: var(--color-ink);
   border-radius: 7px;
   padding: 6px 10px;
-  font-size: 12px;
-  font-family: "JetBrains Mono", monospace;
 }
 .no-matches {
   text-align: center;

@@ -181,7 +181,7 @@ async function buildMatchRecord(baseUrl, summary) {
     playerLeaves: summary.playerLeaves ?? [],
     spectatorCount: summary.spectators?.length ?? 0,
     mapDraws: summary.mapDraws ?? [],
-    legionEnabled: dataset.legionEnabled,
+    legionMatch: dataset.legionMatch,
   };
 }
 

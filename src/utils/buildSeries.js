@@ -98,7 +98,7 @@ export function bucketFrameStatsToSeries(
     teamFacts,
     wind: buildWindSummary(windUpdates),
     unitDefsById,
-    legionEnabled: detectLegionEnabled(unitsCreated),
+    legionMatch: detectlegionMatch(unitsCreated),
   };
 
   // unitResources and unitDamage are included in the fetch (per-unit granularity)
@@ -357,7 +357,7 @@ function distance2D(x1, z1, x2, z2) {
  * standard Armada/Cortex commander defs). Looks at every unit created on
  * the earliest build frame, since all commanders spawn at match start.
  */
-function detectLegionEnabled(unitsCreated) {
+function detectlegionMatch(unitsCreated) {
   if (unitsCreated.length === 0) return false;
   const earliestFrame = Math.min(...unitsCreated.map((u) => u.frame));
   return unitsCreated

@@ -190,12 +190,13 @@ export default function App() {
               <h1>Fire Replay Finder</h1>
             </div>
             <p className="sub-header">
-              scores Beyond All Reason replays for comebacks, photo finishes,
-              big fights, and upsets · built on{" "}
+              Scores Beyond All Reason replays based on how good they are to watch · built on{" "}
               <a href="https://gex.honu.pw/">gex</a>
             </p>
           </div>
-          <div className="mode-switch">
+        </header>
+
+        <div className="mode-switch">
             {["saved", "scan"].map((m) => (
               <button
                 key={m}
@@ -210,7 +211,6 @@ export default function App() {
               </button>
             ))}
           </div>
-        </header>
 
         {/* live controls */}
         {mode === "scan" && (
@@ -319,14 +319,15 @@ export default function App() {
 
         {/* milestone bar */}
 
-        <nav className={`milestone-container ${String(expandBadges)}`}>
-          <fieldset className="badge-container" onClick={toggleBadgeBox}>
-            <span className="badge-show">
-              {expandBadges ? "Hide v" : "Show >"}
+        <nav className={`filter-container ${expandBadges ? "expanded" : ""}`}>
+          <div className="param-filter" >
+            <span className="badge-show"
+              onClick={toggleBadgeBox}>
+              {expandBadges ? "Hide Award Filters v" : "Show Award Filters >"}
             </span>
 
             {expandBadges && (
-              <div className="badge-content">
+              <fieldset className="badge-container">
                 {MILESTONES.map((m) => {
                   const isSelected = activeFilters[m.key];
                   const Icon = m.icon;
@@ -336,6 +337,7 @@ export default function App() {
                       key={m.key}
                       onClick={() => toggleFilter(m.key)}
                       className="milestone-button"
+                      title={m.description}
                       style={{
                         border: isSelected
                           ? `1px solid var(${m.color})`
@@ -356,15 +358,14 @@ export default function App() {
                     </button>
                   );
                 })}
-              </div>
+              </fieldset>
             )}
-          </fieldset>
+          </div>
 
-          <div style={{ flex: 1 }} />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="score">sort: spectate score</option>
-            <option value="recent">sort: most recent</option>
-            <option value="duration">sort: longest</option>
+          <select className="param-filter" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="score">Sort by: spectate score</option>
+            <option value="recent">Sort by: most recent</option>
+            <option value="duration">Sort by: longest game</option>
           </select>
         </nav>
 

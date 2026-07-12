@@ -2,16 +2,14 @@ import { MILESTONES } from "./awards.js";
 import { FRAMES_PER_SECOND } from "./globalVars.js";
 
 // ---------------------------------------------------------------------------
-// TODO: fill these in with the real BAR `definitionName` values for your
-// dataset. Left blank/placeholder rather than guessed, since a wrong name
-// silently matches nothing (or the wrong unit) instead of failing loudly.
+// TODO: rework base race to account for buildings killed
 // ---------------------------------------------------------------------------
-const AFUS_DEFS = []; // e.g. advanced fusion reactor def names, both factions
-const NUKE_DEFS = []; // e.g. nuke silo def names, both factions
-const ORBITAL_CANNON_DEFS = []; // Ragnarok / Calamity / Starfall def names
-const BOMBER_DEFS = []; // strategic/tactical bomber def names
-const BONUS_TECH_DEFS = []; // commandos, bedbugs, spy bots, etc — for techSpread bonus
-const T3_DEFS = []; // any tech-3 unit def name, both factions
+const AFUS_DEFS = ["corafus", "armafus", "legafus"]; // e.g. advanced fusion reactor def names
+const NUKE_DEFS = ["corsilo", "armsilo", "legsilo"]; // e.g. nuke silo def names, both factions
+const ORBITAL_CANNON_DEFS = ["armvulc", "corbuzz", "legstarfall"]; // Ragnarok / Calamity / Starfall def names
+const BOMBER_DEFS = ["corshad", "armthund"]; // t1 bomber def names
+const BONUS_TECH_DEFS = ["armspy", "corspy", "legspy", "cormando", "leginfestor", "corsktl", "armgremlin"]; // commandos, bedbugs, spy bots, etc — for techSpread bonus
+const T3_DEFS = ["corgant", "leggant", "armshltx"]; // any tech-3 gantry, both factions
 
 // Reference wind speed the rush-timing thresholds below are tuned against
 // (see MILESTONES descriptions, e.g. "12 mins on 15 average wind speed").
@@ -44,7 +42,7 @@ export function analyzeMatch(match) {
     backAndForth: backAndForth(series),
     stomp: stomp(series),
     quickForfeit: quickForfeit(loserFacts, playerCount),
-    baseRace: baseRace(last, durationMin, playerCount),
+    // baseRace: baseRace(last, durationMin, playerCount),
     guerillaFighters: guerillaFighters(teamA.facts, teamB.facts),
     carpelTunnel: carpelTunnel(
       teamA.facts,
@@ -54,7 +52,7 @@ export function analyzeMatch(match) {
     ),
     windyDay: windyDay(windAverage),
     spaceRace: spaceRace(series),
-    legionEnabled: legionEnabled(match),
+    legionMatch: legionMatch(match),
     earlyBombing: earlyBombing(teamA.facts, teamB.facts),
     nailBiter: nailBiter(winnerFacts, isDuel),
     afusRush: rushMilestone(
@@ -210,16 +208,15 @@ function quickForfeit(loserFacts, playerCount) {
 /**
  * Huge combined damage relative to match length and player count.
  * NOTE: this uses total damageDealt (units + structures combined) since the
- * event schema doesn't split building damage out separately — a true
- * "base race" (structures specifically) isn't derivable from this data.
+ * will need to be reworked to check specifically destroyed structs
  */
-function baseRace(last, durationMin, playerCount) {
-  const combinedDmg = (last?.dmgA ?? 0) + (last?.dmgB ?? 0);
-  const perMinutePerPlayer =
-    combinedDmg / Math.max(1, durationMin) / Math.max(1, playerCount);
-  const flag = perMinutePerPlayer >= 400;
-  return { flag, magnitude: clamp01((perMinutePerPlayer - 400) / 800) };
-}
+// function baseRace(last, durationMin, playerCount) {
+//   const combinedDmg = (last?.dmgA ?? 0) + (last?.dmgB ?? 0);
+//   const perMinutePerPlayer =
+//     combinedDmg / Math.max(1, durationMin) / Math.max(1, playerCount);
+//   const flag = perMinutePerPlayer >= 400;
+//   return { flag, magnitude: clamp01((perMinutePerPlayer - 400) / 800) };
+// }
 
 /** High average damage-per-metal-spent (combat efficiency) across both teams. */
 function guerillaFighters(factsA, factsB) {
@@ -263,8 +260,8 @@ function spaceRace(series) {
 }
 
 /** Legion Enabled. Weight 0 — informational only. */
-function legionEnabled(match) {
-  const flag = Boolean(match.legionEnabled);
+function legionMatch(match) {
+  const flag = Boolean(match.legionMatch);
   return { flag, magnitude: flag ? 1 : 0 };
 }
 
