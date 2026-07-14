@@ -15,10 +15,10 @@ import {
   Rocket,
   PocketKnife,
   ArrowRightLeft,
-  SportShoe,
   Flag,
   BowArrow,
   Bomb,
+  Scale,
 } from "lucide-react";
 
 export const MILESTONES = [
@@ -49,7 +49,7 @@ export const MILESTONES = [
   {
     key: "stomp",
     label: "Stomp",
-    icon: SportShoe,
+    icon: Crown,
     color: "--color-upset",
     weight: -2,
     description: "Heavily one-sided, reduces spectator score.",
@@ -147,7 +147,7 @@ export const MILESTONES = [
   },
   {
     key: "orbitalCannons",
-    label: "Orbital Cannons",
+    label: "Big Guns",
     icon: Crosshair,
     color: "--color-combat",
     weight: 1,
@@ -181,7 +181,7 @@ export const MILESTONES = [
   {
     key: "upset",
     label: "Imbalanced",
-    icon: Crown,
+    icon: Scale,
     color: "--color-upset",
     weight: 0,
     description:

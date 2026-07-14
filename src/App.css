@@ -30,9 +30,9 @@
 h1 {
   font-family: "Orbitron", sans-serif;
   font-weight: 700;
-  font-size: 26px;
+  font-size: 30px;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.05em;
 }
 .sub-header {
   color: var(--color-muted);
@@ -147,10 +147,12 @@ a {
 /* Style for the fieldset (badge-container) inside */
 .badge-container {
   display: flex;
-  padding: 0;
-  margin: 0;
+  padding: 10px;
   border: none;
   width: 100%;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: baseline;
 }
 .badge-filter {
   margin: 0;

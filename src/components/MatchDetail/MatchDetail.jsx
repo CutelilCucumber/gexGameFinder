@@ -1,3 +1,5 @@
+
+import { useState, useEffect } from "react";
 import { COLORS } from "../../utils/globalVars.js";
 import {
   AreaChart,
@@ -13,23 +15,43 @@ import { Stat } from "../ui/Stat.jsx";
 import "./MatchDetail.css";
 
 const CHARTS = [
-  { key: "armyDiff", title: "Army Value Difference", color: COLORS.eco, unit: "" },
-  { key: "ecoDiff", title: "Eco Value Difference", color: COLORS.close, unit: "" },
-  { key: "dmgDiff", title: "Damage Dealt Difference", color: COLORS.combat, unit: "" },
-  { key: "actionsDiff", title: "APM Difference", color: COLORS.upset, unit: "" },
+  { key: "armyDiff", title: "Army Value Difference", color: COLORS.eco, unit: "m" },
+  { key: "ecoDiff", title: "Eco Value Difference", color: COLORS.close, unit: "m" },
+  { key: "dmgDiff", title: "Damage Dealt Difference", color: COLORS.combat, unit: "dmg" },
+  { key: "actionsDiff", title: "APM Difference", color: COLORS.upset, unit: "apm" },
 ];
 
-export function MatchDetail({ match, analysis }) {
+export function MatchDetail({ match, analysis, flipGraphs }) {
+  const [diffData, setDiffData] = useState((match.series.map((p) => ({
+          t: p.t,
+          armyDiff: (p.armyA ?? 0) - (p.armyB ?? 0),
+          ecoDiff: (p.ecoA ?? 0) - (p.ecoB ?? 0),
+          dmgDiff: (p.dmgA ?? 0) - (p.dmgB ?? 0),
+          actionsDiff: (p.actionsA ?? 0) - (p.actionsB ?? 0),
+        }))))
   const { details } = analysis;
 
   // one shared array of per-minute diffs, feeding all 4 charts below
-  const diffData = match.series.map((p) => ({
-    t: p.t,
-    armyDiff: (p.armyA ?? 0) - (p.armyB ?? 0),
-    ecoDiff: (p.ecoA ?? 0) - (p.ecoB ?? 0),
-    dmgDiff: (p.dmgA ?? 0) - (p.dmgB ?? 0),
-    actionsDiff: (p.actionsA ?? 0) - (p.actionsB ?? 0),
-  }));
+    useEffect(() => {
+    if (flipGraphs) {
+        setDiffData (match.series.map((p) => ({
+          t: p.t,
+          armyDiff: (p.armyB ?? 0) - (p.armyA ?? 0),
+          ecoDiff: (p.ecoB ?? 0) - (p.ecoA ?? 0),
+          dmgDiff: (p.dmgB ?? 0) - (p.dmgA ?? 0),
+          actionsDiff: (p.actionsB ?? 0) - (p.actionsA ?? 0),
+        })))
+          } else {
+              setDiffData (match.series.map((p) => ({
+          t: p.t,
+          armyDiff: (p.armyA ?? 0) - (p.armyB ?? 0),
+          ecoDiff: (p.ecoA ?? 0) - (p.ecoB ?? 0),
+          dmgDiff: (p.dmgA ?? 0) - (p.dmgB ?? 0),
+          actionsDiff: (p.actionsA ?? 0) - (p.actionsB ?? 0),
+        })))
+    }
+  }, [flipGraphs]);
+
 
   return (
     <div className="detail-container">
@@ -42,8 +64,6 @@ export function MatchDetail({ match, analysis }) {
             data={diffData}
             dataKey={chart.key}
             color={chart.color}
-            teamAName={match.teamA.name}
-            teamBName={match.teamB.name}
           />
         ))}
       </div>
@@ -94,7 +114,7 @@ export function MatchDetail({ match, analysis }) {
  * team B), drawn symmetrically around a zero midline so "who's ahead" reads
  * as above/below center rather than needing a legend.
  */
-function DiffChart({ id, title, data, dataKey, color, teamAName, teamBName }) {
+function DiffChart({ id, title, data, dataKey, color}) {
   const maxAbs = Math.max(1, ...data.map((p) => Math.abs(p[dataKey])));
 
   return (
@@ -128,7 +148,7 @@ function DiffChart({ id, title, data, dataKey, color, teamAName, teamBName }) {
             }}
             labelStyle={{ color: COLORS.muted }}
             formatter={(v) => [
-              `${v >= 0 ? "+" : ""}${Math.round(v)} ${v >= 0 ? teamAName : teamBName}`,
+              `${v >= 0 ? "+" : ""}${Math.round(v)} ${v >= 0 ? "Blue team lead" : "Red team lead"}`,
               "",
             ]}
             labelFormatter={(t) => `minute ${t}`}

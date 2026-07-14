@@ -23,10 +23,16 @@ export function MatchCard({
   onToggle,
   onSave,
   onDelete,
+  spoiled
 }) {
   const [showWinner, setShowWinner] = useState(false);
   const [showAwards, setShowAwards] = useState(false);
   const [flipGraphs, setFlipGraphs] = useState(true);
+
+  useEffect(() => {
+    setShowWinner(spoiled === "winner" || spoiled === "both");
+    setShowAwards(spoiled === "award" || spoiled === "both");
+  }, [spoiled]);
 
   useEffect(() => {
     if (showWinner === true) {
@@ -86,7 +92,7 @@ export function MatchCard({
             </span>
           </div>
           {showAwards ? (
-            <section className="badge-container">
+            <section className="award-container">
               {activeMilestones.length > 0 ? (
                 activeMilestones.map((m) => (
                   <Badge
@@ -133,7 +139,7 @@ export function MatchCard({
           )}
         </div>
       </button>
-      {expanded && <MatchDetail match={match} analysis={analysis} />}
+      {expanded && <MatchDetail match={match} analysis={analysis} flipGraphs={flipGraphs} />}
     </article>
   );
 }

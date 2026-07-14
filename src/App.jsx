@@ -48,6 +48,7 @@ export default function App() {
   const [expandedId, setExpandedId] = useState(null);
   const [minScore, setMinScore] = useState(0);
   const [sortBy, setSortBy] = useState("score");
+  const [spoiled, setSpoiled] = useState(false);
   const [loadCount, setLoadCount] = useState(0);
 
   useEffect(() => {
@@ -368,6 +369,16 @@ export default function App() {
             <option value="recent">Sort by: most recent</option>
             <option value="duration">Sort by: longest game</option>
           </select>
+          <select
+            className="option-container"
+            value={spoiled}
+            onChange={(e) => setSpoiled(e.target.value)}
+          >
+            <option value={false}>Spoil: none</option>
+            <option value="award">Spoil: awards</option>
+            <option value="winner">Spoil: winner</option>
+            <option value="both">Spoil: awards and winner</option>
+          </select>
         </nav>
 
         {/* results */}
@@ -387,6 +398,7 @@ export default function App() {
               isSaved={inCache(m.id)}
               onSave={() => handleSave(m)}
               onDelete={() => handleDelete(m.id)}
+              spoiled={spoiled}
             />
           ))}
         </section>

@@ -71,10 +71,10 @@ export function MiniSparkline({
       </svg>
       <span
         className="scoring-tooltip"
-        style={{ position: "absolute", bottom: 0 }}
+        style={{ position: "absolute", top: 5 }}
       >
         {winner
-          ? `> Team ${winner} won this match!`
+          ? `> ${winner === "A" ? "Blue" : "Red"} team won this match!`
           : "> Graph is randomized if winner is not spoiled."}
       </span>
     </div>

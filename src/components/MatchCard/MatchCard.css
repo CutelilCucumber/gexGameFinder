@@ -77,7 +77,7 @@
 .winner-show:hover {
   color: var(--color-upset);
 }
-.badge-container {
+.award-container {
   display: flex;
   gap: 6px;
   margin-top: 7px;
