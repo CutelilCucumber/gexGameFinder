@@ -91,7 +91,7 @@ export function bucketFrameStatsToSeries(
     teamFacts,
     wind: buildWindSummary(windUpdates),
     unitDefsById,
-    legionEnabled: detectLegionEnabled(unitsCreated),
+    legionMatch: detectLegionEnabled(unitsCreated),
   };
 
   // unitResources and unitDamage are included in the fetch (per-unit granularity)

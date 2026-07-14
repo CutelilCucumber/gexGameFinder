@@ -269,8 +269,9 @@ function spaceRace(series) {
   return { flag, magnitude: clamp01(1 - avgEcoGapPct / 0.25) };
 }
 
-/** Legion Enabled. Weight 0 — informational only. */
+/** Legion detected. Weight 0 — informational only. */
 function legionMatch(match) {
+  console.log(match)
   const flag = Boolean(match.legionMatch);
   return { flag, magnitude: flag ? 1 : 0 };
 }
