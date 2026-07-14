@@ -1,28 +1,24 @@
-# BAR Spectator Finder WIP
+# BAR Replay Radar
 
-Scans recent Beyond All Reason matches and scores them on how worth watching they are — comebacks, big fights, close finishes, upsets — using data pulled live from [gex](https://github.com/Varunda/gex)'s public API.
+Scans recent Beyond All Reason matches and scores them on how worth watching they are with awards like comebacks, big fights, close finishes, etc — using data pulled live from [gex](https://github.com/Varunda/gex)'s public API.
 
 ## What it does
 
-1. Pulls recent ranked matches from `gex.honu.pw`'s `/api/match/search`, filtered by your settings.
-2. For each match, fetches per-frame team stats (`/api/game-event/{id}?includeTeamStats=true`) and analyzes the course of the game.
-3. Scores each match 0–100 and tags it with badges:
-   - **COMEBACK** — winner was down 20%+ in economy after minute 3, won anyway
-   - **BIG BATTLE** — a sharp damage-per-second spike somewhere in the game
-   - **NAIL-BITER** — final kill counts within 25% of each other, 12+ minute game
-   - **UPSET** — the winning side had a meaningfully lower average skill rating
-4. Sorts results by score.
+1. Pulls recent ranked matches from `gex.honu.pw`.
+2. For each match, fetches per-frame team stats and analyzes the course of the game.
+3. Scores each match 0–100 and tags it with various milestones found in /`src/utils/awards.js`, each with different weights
+4. Filters by awards and sorts them by user choice.
+5. the user has the option to spoil awards and winners globally or per match.
 
 ## Data & caching
 
-- No backend — it's a single client-side React component that talks directly to `gex.honu.pw` (CORS is open there).
-- Per-match scores are cached locally to avoid abundant api calls.
+- No backend — it's a single client-side React component that saves data to Storage.
+- Per-match event data is cached in session storage to avoid repetative api calls.
 
 ## Known limits
 
-- Only scores clean 2-side matches (1v1s, team vs. team). FFA/3+ team games show up but aren't analyzed — the frame data doesn't map cleanly to "who's ahead" with more than two sides yet.
-- "Economy" is approximated from cumulative metal production; BAR's replay data doesn't expose a true army-value metric.
-- Assumes 30 frames/sec (confirmed from gex's own `ApmCalculatorUtil` source).
+- Only scores clean 2-side matches (1v1s, team vs. team). FFA/3+ team games show up with a warning — the frame data doesn't map cleanly to "who's ahead" with more than two sides yet.
+- Eco is approximated from cumulative metal production and energy/60 (free converters!)
 - Matches need to be fully parsed by gex (`processingParsed=true`) before scoring works — very fresh uploads may not qualify yet.
 
 ## Usage
@@ -30,3 +26,11 @@ Scans recent Beyond All Reason matches and scores them on how worth watching the
 Clone the repo
 npm install
 npm run dev
+
+## WIP
+
+-tweak award threshholds and weights by watching real games
+-add scan my match ID for specific matches
+-Filtering by queries to gex api with user settings.
+-add backend for consistent gex scanning so its not handled by clients.
+-db support with complete analyzed data, to significantly reduce api calls.
