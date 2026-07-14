@@ -167,7 +167,7 @@ function comeback(series, winnerIsA) {
     const winnerShare = winnerIsA ? p.leadPct : 1 - p.leadPct;
     worstDeficit = Math.max(worstDeficit, 0.5 - winnerShare);
   }
-  const flag = worstDeficit >= 0.4;
+  const flag = worstDeficit >= 0.5;
   return { flag, magnitude: clamp01(worstDeficit / 0.5), worstDeficit };
 }
 
@@ -180,8 +180,8 @@ function backAndForth(series) {
     if (sign !== 0 && prevSign !== null && sign !== prevSign) shifts++;
     if (sign !== 0) prevSign = sign;
   }
-  const flag = shifts >= 3;
-  return { flag, magnitude: clamp01(shifts / 10), shifts };
+  const flag = shifts >= 10;
+  return { flag, magnitude: clamp01(shifts / 20), shifts };
 }
 
 /** Heavily one-sided — average lead gap across the whole match, not just the final score. */

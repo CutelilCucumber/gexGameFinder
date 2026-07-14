@@ -75,7 +75,7 @@ export function MiniSparkline({
       >
         {winner
           ? `> ${winner === "A" ? "Blue" : "Red"} team won this match!`
-          : "> Graph is randomized if winner is not spoiled."}
+          : "> Graphs are randomized if winner is not spoiled."}
       </span>
     </div>
   );

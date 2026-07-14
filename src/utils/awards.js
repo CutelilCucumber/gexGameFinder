@@ -141,7 +141,7 @@ export const MILESTONES = [
     label: "Nuke Rush",
     icon: Bomb,
     color: "--color-combat",
-    weight: 1,
+    weight: 2,
     description:
       "Nuke built relatively fast (e.g., 12 mins on 15 average wind speed), exclude metal maps.",
   },
@@ -158,7 +158,7 @@ export const MILESTONES = [
     label: "Tech Spread",
     icon: PocketKnife,
     color: "--color-close",
-    weight: 3,
+    weight: 4,
     description:
       "Unit type diversity (bots, veh, air, sea, hov, amphib), weighted less for large games. Some units (commandos, bedbugs, spy bots) worth more.",
   },
@@ -175,7 +175,7 @@ export const MILESTONES = [
     label: "Commander Attack",
     icon: StepForward,
     color: "--color-combat",
-    weight: 2,
+    weight: 3,
     description: "One team's commander moves into enemy start location.",
   },
   {
