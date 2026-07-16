@@ -51,7 +51,7 @@ export function analyzeMatch(match) {
     comeback: comeback(series, winnerIsA),
     backAndForth: backAndForth(series),
     stomp: stomp(series),
-    quickForfeit: quickForfeit(loserFacts, playerCount),
+    // quickForfeit: quickForfeit(loserFacts, playerCount),
     // baseRace: baseRace(last, durationMin, playerCount),
     guerillaFighters: guerillaFighters(teamA.facts, teamB.facts),
     carpalTunnel: carpalTunnel(
@@ -71,7 +71,7 @@ export function analyzeMatch(match) {
       AFUS_DEFS,
       10,
       windAverage,
-      playerCount
+      playerCount,
     ),
     nukeRush: rushMilestone(
       teamA.facts,
@@ -79,7 +79,7 @@ export function analyzeMatch(match) {
       NUKE_DEFS,
       10,
       windAverage,
-      playerCount
+      playerCount,
     ),
     gantryRush: rushMilestone(
       teamA.facts,
@@ -87,10 +87,15 @@ export function analyzeMatch(match) {
       T3_DEFS,
       12,
       windAverage,
-      playerCount
+      playerCount,
     ),
-    orbitalCannons: orbitalCannons(teamA.facts, teamB.facts, windAverage, playerCount),
-    techSpread: techSpread(teamA.facts, teamB.facts, playerCount),
+    orbitalCannons: orbitalCannons(
+      teamA.facts,
+      teamB.facts,
+      windAverage,
+      playerCount,
+    ),
+    techSpread: techSpread(teamA.facts, teamB.facts, isDuel),
     goliathDuel: goliathDuel(teamA.facts, teamB.facts, isDuel),
     commanderAttack: commanderAttack(teamA.facts, teamB.facts),
     upset: upset(teamA.skill, teamB.skill, winner),
@@ -103,7 +108,7 @@ export function analyzeMatch(match) {
     magnitudes[key] = results[key].magnitude;
   }
 
-  const score = computeScore(flags, magnitudes, durationMin);
+  const score = computeScore(flags, magnitudes, durationMin, playerCount);
 
   return {
     flags,
@@ -131,23 +136,23 @@ export function analyzeMatch(match) {
 // this keeps working correctly if milestones are added/removed/reweighted
 // later without needing to hand-tune a magic max score here.
 // ---------------------------------------------------------------------------
-function computeScore(flags, magnitudes, durationMin) {
-  const maxPositiveWeight = MILESTONES.reduce(
-    (sum, m) => sum + Math.max(0, m.weight),
-    0,
-  );
+function computeScore(flags, magnitudes, durationMin, isDuel) {
+  const maxPositiveWeight = MILESTONES.reduce((sum, m) => {
+    if (m.key === "goliathDuel" && !isDuel) return sum;
+    if (m.key === "nailBiter" && isDuel) return sum;
+    return sum + Math.max(0, m.weight);
+  }, 0);
+
   let raw = 0;
   for (const m of MILESTONES) {
     if (!flags[m.key]) continue;
     raw += m.weight * (0.5 + 0.5 * magnitudes[m.key]);
   }
-  let score = maxPositiveWeight > 0
-  ? (Math.sqrt(raw) / Math.sqrt(maxPositiveWeight)) * 100
-  : 0;
+  let score = maxPositiveWeight > 0 ? (raw / maxPositiveWeight) * 100 : 0;
 
   // sweet-spot duration bonus (most watchable games run 15-40 min)
   if (durationMin >= 15 && durationMin <= 40) score += 5;
-  
+
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
@@ -238,22 +243,22 @@ function stomp(series) {
  * Weighted more for large teams via the magnitude (bigger games -> a quick
  * quit wastes more spectator time).
  */
-function quickForfeit(loserFacts, playerCount) {
+// function quickForfeit(loserFacts, playerCount) {
 
-  if (!loserFacts?.deathFrame || !loserFacts.peakArmyValue)
-    return { flag: false, magnitude: 0 };
-  const deathMinute = frameToMinute(loserFacts.deathFrame);
-  // approximate army-at-death using the closest available fact: final value
-  // recorded before death is effectively finalArmyValue, since teamFacts is
-  // built from the full series which stops updating once a team is dead
-  const armyRetainedRatio =
-    loserFacts.peakArmyValue > 0
-      ? loserFacts.finalArmyValue / loserFacts.peakArmyValue
-      : 0;
-  const flag = armyRetainedRatio >= 0.5 && deathMinute > 0;
-  const sizeWeight = clamp01(playerCount / 8);
-  return { flag, magnitude: clamp01(armyRetainedRatio * sizeWeight) };
-}
+//   if (!loserFacts?.deathFrame || !loserFacts.peakArmyValue)
+//     return { flag: false, magnitude: 0 };
+//   const deathMinute = frameToMinute(loserFacts.deathFrame);
+//   // approximate army-at-death using the closest available fact: final value
+//   // recorded before death is effectively finalArmyValue, since teamFacts is
+//   // built from the full series which stops updating once a team is dead
+//   const armyRetainedRatio =
+//     loserFacts.peakArmyValue > 0
+//       ? loserFacts.finalArmyValue / loserFacts.peakArmyValue
+//       : 0;
+//   const flag = armyRetainedRatio >= 0.5 && deathMinute > 0;
+//   const sizeWeight = clamp01(playerCount / 8);
+//   return { flag, magnitude: clamp01(armyRetainedRatio * sizeWeight) };
+// }
 
 /**
  * significant building damage from both teams in a close time frams.
@@ -349,7 +354,7 @@ function rushMilestone(
   defNames,
   baseThresholdMin,
   windAverage,
-  playerCount
+  playerCount,
 ) {
   if (defNames.length === 0) return { flag: false, magnitude: 0 };
   const fastestFrame = (facts) =>
@@ -362,7 +367,7 @@ function rushMilestone(
   );
   if (!Number.isFinite(fastestMinute)) return { flag: false, magnitude: 0 };
   //adjust time threshhold for size and wind
-  const sizeFactor = 3 - 2 * (playerCount - 2) / (16 - 2)
+  const sizeFactor = 3 - (2 * (playerCount - 2)) / (16 - 2);
   const windFactor = windAverage > 0 ? WIND_BASELINE / windAverage : 1;
   const adjustedThreshold =
     baseThresholdMin * Math.min(2, Math.max(0.5, windFactor)) * sizeFactor;
@@ -381,7 +386,7 @@ function orbitalCannons(factsA, factsB, windAverage, playerCount) {
     ORBITAL_CANNON_DEFS,
     30,
     windAverage,
-    playerCount
+    playerCount,
   );
   const totalBuilt = (facts) =>
     ORBITAL_CANNON_DEFS.reduce(
