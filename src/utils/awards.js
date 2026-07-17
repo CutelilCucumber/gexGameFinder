@@ -20,6 +20,7 @@ import {
   Bomb,
   Scale,
   SquareArrowUp,
+  Popcorn,
 } from "lucide-react";
 
 export const MILESTONES = [
@@ -88,14 +89,7 @@ export const MILESTONES = [
     weight: 2,
     description: "High average player APM throughout the game.",
   },
-  {
-    key: "windyDay",
-    label: "Windy Day",
-    icon: Wind,
-    color: "--color-close",
-    weight: 0,
-    description: "Wind speed higher than average for the map, worth no points.",
-  },
+
   {
     key: "spaceRace",
     label: "Space Race",
@@ -103,14 +97,6 @@ export const MILESTONES = [
     color: "--color-close",
     weight: 2,
     description: "Close eco between teams throughout the match.",
-  },
-  {
-    key: "legionMatch",
-    label: "Legion Match",
-    icon: Bot,
-    color: "--color-eco",
-    weight: 0,
-    description: "Legion faction detected in this game, worth no points.",
   },
   {
     key: "earlyBombing",
@@ -189,6 +175,22 @@ export const MILESTONES = [
     description: "One team's commander moves into enemy start location.",
   },
   {
+    key: "windyDay",
+    label: "Windy Day",
+    icon: Wind,
+    color: "--color-close",
+    weight: 0,
+    description: "Wind speed higher than average for the map, worth no points.",
+  },
+  {
+    key: "legionMatch",
+    label: "Legion Match",
+    icon: Bot,
+    color: "--color-eco",
+    weight: 0,
+    description: "Legion faction detected in this game, worth no points.",
+  },
+  {
     key: "upset",
     label: "Imbalanced",
     icon: Scale,
@@ -196,5 +198,14 @@ export const MILESTONES = [
     weight: 0,
     description:
       "Noticable skill gap between teams regardless of outcome, worth no points.",
+  },
+  {
+    key: "peanutGallery",
+    label: "Peanut Gallery",
+    icon: Popcorn,
+    color: "--color-upset",
+    weight: 0,
+    description:
+      "At least 10 spectators. Generally more yapping, worth no points.",
   },
 ];

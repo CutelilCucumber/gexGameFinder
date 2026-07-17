@@ -38,6 +38,8 @@ export function analyzeMatch(match) {
     playerLeaves,
     playerCount,
     gamemode,
+    spectatorCount,
+    mapDraws,
   } = match;
   const last = series[series.length - 1];
   const winnerIsA = winner === "A";
@@ -60,9 +62,7 @@ export function analyzeMatch(match) {
       playerCount,
       durationMin,
     ),
-    windyDay: windyDay(windAverage),
     spaceRace: spaceRace(series),
-    legionMatch: legionMatch(match),
     earlyBombing: earlyBombing(teamA.facts, teamB.facts),
     nailBiter: nailBiter(winnerFacts, isDuel),
     afusRush: rushMilestone(
@@ -98,7 +98,10 @@ export function analyzeMatch(match) {
     techSpread: techSpread(teamA.facts, teamB.facts, isDuel),
     goliathDuel: goliathDuel(teamA.facts, teamB.facts, isDuel),
     commanderAttack: commanderAttack(teamA.facts, teamB.facts),
+    windyDay: windyDay(windAverage),
+    legionMatch: legionMatch(match),
     upset: upset(teamA.skill, teamB.skill, winner),
+    peanutGallery: peanutGallery(spectatorCount),
   };
 
   const flags = {};
@@ -134,26 +137,34 @@ export function analyzeMatch(match) {
 // ---------------------------------------------------------------------------
 // Scoring: normalized against the sum of positive weights in MILESTONES, so
 // this keeps working correctly if milestones are added/removed/reweighted
-// later without needing to hand-tune a magic max score here.
+// scores are calculated only using the magnitudes, ensuring points are earned for "close enough" to an award
 // ---------------------------------------------------------------------------
-function computeScore(flags, magnitudes, durationMin, isDuel) {
+function computeScore(magnitudes, durationMin, isDuel) {
   const maxPositiveWeight = MILESTONES.reduce((sum, m) => {
-    if (m.key === "goliathDuel" && !isDuel) return sum;
-    if (m.key === "nailBiter" && isDuel) return sum;
+    if (excludedKey(isDuel, m.key)) return sum;
     return sum + Math.max(0, m.weight);
   }, 0);
 
   let raw = 0;
   for (const m of MILESTONES) {
-    if (!flags[m.key]) continue;
-    raw += m.weight * (0.5 + 0.5 * magnitudes[m.key]);
+    if (excludedKey(isDuel, m.key)) continue;
+    raw += m.weight * magnitudes[m.key];
   }
-  let score = maxPositiveWeight > 0 ? (raw / maxPositiveWeight) * 100 : 0;
+  let score = maxPositiveWeight > 0 ? (raw / maxPositiveWeight) * 120 : 0;
 
   // sweet-spot duration bonus (most watchable games run 15-40 min)
   if (durationMin >= 15 && durationMin <= 40) score += 5;
 
   return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function excludedKey(isDuel, key) {
+  if (key === "peanutGallery") return true;
+  if (key === "windyDay") return true;
+  if (key === "legionMatch") return true;
+  if (key === "upset") return true;
+  if (key === "goliathDuel" && !isDuel) return true;
+  if (key === "nailBiter" && isDuel) return true;
 }
 
 function clamp01(x) {
@@ -234,7 +245,7 @@ function stomp(series) {
     series.reduce((sum, p) => sum + Math.abs(p.leadPct - 0.4), 0) /
     Math.max(1, series.length);
   const flag = avgGap >= 0.3;
-  return { flag, magnitude: clamp01((avgGap - 0.3) / 0.2) };
+  return { flag, magnitude: avgGap / 0.5 };
 }
 
 /**
@@ -279,7 +290,7 @@ function guerillaFighters(factsA, factsB) {
     f?.totalMetalUsed > 0 ? f.totalDamageDealt / f.totalMetalUsed : 0;
   const avgEfficiency = (efficiency(factsA) + efficiency(factsB)) / 2;
   const flag = avgEfficiency >= 3;
-  return { flag, magnitude: clamp01((avgEfficiency - 3) / 4) };
+  return { flag, magnitude: avgEfficiency / 7 };
 }
 
 /** High average player APM across the match. */
@@ -291,7 +302,7 @@ function carpalTunnel(factsA, factsB, playerCount, durationMin) {
       ? totalActions / durationMin / playerCount
       : 0;
   const flag = apmPerPlayer >= 40;
-  return { flag, magnitude: clamp01((apmPerPlayer - 40) / 60) };
+  return { flag, magnitude: apmPerPlayer / 100 };
 }
 
 /** Wind speed higher than baseline. Weight 0 — informational only. */
@@ -329,7 +340,7 @@ function earlyBombing(factsA, factsB) {
     }, 0);
   const maxCount = Math.max(countBefore(factsA), countBefore(factsB));
   const flag = maxCount >= 5;
-  return { flag, magnitude: clamp01(maxCount / 12) };
+  return { flag, magnitude: clamp01(maxCount / 10) };
 }
 
 /** One commander left on the winning team. Excludes 1v1 duels (trivially always true there). */
@@ -340,7 +351,8 @@ function nailBiter(winnerFacts, isDuel) {
     (winnerFacts.commanderUnitIDs?.length ?? 0) -
     (winnerFacts.commanderDeaths?.length ?? 0);
   const flag = remaining === 1;
-  return { flag, magnitude: flag ? 1 : 0, remaining };
+  const close = remaining === 2;
+  return { flag, magnitude: flag ? 1 : close ? 0.5 : 0, remaining };
 }
 
 /**
@@ -373,7 +385,7 @@ function rushMilestone(
     baseThresholdMin * Math.min(2, Math.max(0.5, windFactor)) * sizeFactor;
   const flag = fastestMinute <= adjustedThreshold;
   const magnitude = clamp01(
-    (adjustedThreshold - fastestMinute) / adjustedThreshold,
+    1 - (fastestMinute - adjustedThreshold) / adjustedThreshold,
   );
   return { flag, magnitude, fastestMinute };
 }
@@ -429,7 +441,8 @@ function goliathDuel(factsA, factsB, isDuel) {
   const reachedT3 = (facts) =>
     T3_DEFS.some((name) => (facts?.unitsCreatedByDef?.[name]?.count ?? 0) > 0);
   const flag = reachedT3(factsA) && reachedT3(factsB);
-  return { flag, magnitude: flag ? 1 : 0 };
+  const singleT3 = reachedT3(factsA) || reachedT3(factsB);
+  return { flag, magnitude: flag ? 1 : singleT3 ? 0.5 : 0 };
 }
 
 /**
@@ -457,4 +470,10 @@ function upset(skillA, skillB, winner) {
   const lowerSkillSide = skillA < skillB ? "A" : "B";
   const flag = skillGap >= 5 && winner === lowerSkillSide;
   return { flag, magnitude: clamp01(skillGap / 15) };
+}
+
+/* At least 10 spectators in the game */
+function peanutGallery(spectatorCount) {
+  const flag = spectatorCount >= 10;
+  return { flag };
 }

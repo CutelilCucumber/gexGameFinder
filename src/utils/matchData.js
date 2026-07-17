@@ -55,9 +55,6 @@ async function searchMatches(baseUrl, filters) {
     orderByDir: "desc",
     ranked: "true",
     processingAction: "true", // teamStats only exist once the action log is parsed
-    includePlayerLeaves: "true", // for the quick-forfeit milestone
-    includeSpectators: "true", // for audience-size context
-    includeMapDraws: "true", // for the "artistic players" milestone
   });
 
   if (gamemode) params.set("gamemode", String(gamemode));
