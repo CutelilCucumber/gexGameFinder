@@ -179,16 +179,16 @@ function calculateTimeBonus(durationMin) {
 
   // Define the spectrum rules
   if (normalized >= 0 && normalized <= 0.5) {
-    // 10-30 minutes: Linear increase from 1 to 10
-    // normalized 0 (10 min) -> 1, normalized 0.5 (30 min) -> 10
-    return Math.round(normalized * 2 * 9 + 1);
+    // 10-30 minutes: Linear increase from 1 to 8
+    // normalized 0 (10 min) -> 1, normalized 0.5 (30 min) -> 8
+    return Math.round(normalized * 2 * 7 + 1);
   } else if (normalized > 0.5 && normalized <= (40 - 10) / (60 - 10)) {
-    // 30-40 minutes: Fixed value of 10
-    return 10;
+    // 30-40 minutes: Fixed value of 8
+    return 8;
   } else {
-    // 40-60 minutes: Linear decrease from 10 to 1
-    // normalized 0.5 (40 min) -> 10, normalized 1 (60 min) -> 1
-    return Math.round(10 - (normalized - 0.5) * 2 * 9);
+    // 40-60 minutes: Linear decrease from 8 to 1
+    // normalized 0.5 (40 min) -> 8, normalized 1 (60 min) -> 1
+    return Math.round(8 - (normalized - 0.5) * 2 * 7);
   }
 }
 
