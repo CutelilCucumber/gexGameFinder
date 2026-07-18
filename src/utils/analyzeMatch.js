@@ -72,6 +72,7 @@ export function analyzeMatch(match) {
       10,
       windAverage,
       playerCount,
+      durationMin
     ),
     nukeRush: rushMilestone(
       teamA.facts,
@@ -80,6 +81,7 @@ export function analyzeMatch(match) {
       10,
       windAverage,
       playerCount,
+      durationMin
     ),
     gantryRush: rushMilestone(
       teamA.facts,
@@ -88,12 +90,14 @@ export function analyzeMatch(match) {
       12,
       windAverage,
       playerCount,
+      durationMin
     ),
     orbitalCannons: orbitalCannons(
       teamA.facts,
       teamB.facts,
       windAverage,
       playerCount,
+      durationMin
     ),
     techSpread: techSpread(teamA.facts, teamB.facts, isDuel),
     goliathDuel: goliathDuel(teamA.facts, teamB.facts, isDuel),
@@ -111,7 +115,7 @@ export function analyzeMatch(match) {
     magnitudes[key] = results[key].magnitude;
   }
 
-  const score = computeScore(flags, magnitudes, durationMin, playerCount);
+  const score = computeScore(magnitudes, durationMin, isDuel);
 
   return {
     flags,
@@ -359,6 +363,8 @@ function nailBiter(winnerFacts, isDuel) {
  * Shared logic for AFUs/nuke rush: fastest matching def built by either
  * team, compared against a base-minute threshold that's tightened when wind
  * is above baseline (more energy available -> a "fast" build is faster).
+ * gex is unable to differentiate between a scaffold and built building,
+ * to improve accuracy, estimate build time based on  scaffold placement
  */
 function rushMilestone(
   factsA,
@@ -367,6 +373,7 @@ function rushMilestone(
   baseThresholdMin,
   windAverage,
   playerCount,
+  durationMin
 ) {
   if (defNames.length === 0) return { flag: false, magnitude: 0 };
   const fastestFrame = (facts) =>
@@ -374,10 +381,14 @@ function rushMilestone(
       const firstFrame = facts?.unitsCreatedByDef?.[name]?.firstFrame;
       return firstFrame != null ? Math.min(best, firstFrame) : best;
     }, Infinity);
-  const fastestMinute = frameToMinute(
+  const scaffoldMinute = frameToMinute(
     Math.min(fastestFrame(factsA), fastestFrame(factsB)),
   );
-  if (!Number.isFinite(fastestMinute)) return { flag: false, magnitude: 0 };
+  if (!Number.isFinite(scaffoldMinute)) return { flag: false, magnitude: 0 };
+  //guestimate build time based on scaffold placement time
+  const guessedBuildTime = scaffoldMinute >= 15 ? 0.5 : (16 - scaffoldMinute)/2
+  const fastestMinute = scaffoldMinute + guessedBuildTime
+  if (fastestMinute >= durationMin - 1) return { flag: false, magnitude: 0 };
   //adjust time threshhold for size and wind
   const sizeFactor = 3 - (2 * (playerCount - 2)) / (16 - 2);
   const windFactor = windAverage > 0 ? WIND_BASELINE / windAverage : 1;
@@ -391,7 +402,7 @@ function rushMilestone(
 }
 
 /** Ragnarok/Calamity/Starfall rush, or 1 built total across the match. */
-function orbitalCannons(factsA, factsB, windAverage, playerCount) {
+function orbitalCannons(factsA, factsB, windAverage, playerCount, durationMin) {
   const rush = rushMilestone(
     factsA,
     factsB,
@@ -399,6 +410,7 @@ function orbitalCannons(factsA, factsB, windAverage, playerCount) {
     30,
     windAverage,
     playerCount,
+    durationMin
   );
   const totalBuilt = (facts) =>
     ORBITAL_CANNON_DEFS.reduce(
