@@ -35,6 +35,7 @@ const rateLimiter = new RateLimiter(300, 1);
 async function getJson(url) {
   //fetch the thing
   await rateLimiter.acquire();
+  console.log("fetching from: ", url)
   const res = await fetch(url, {
     referrerPolicy: "strict-origin-when-cross-origin",
   });
@@ -81,6 +82,13 @@ function findInCache(matchId) {
  * missing ally teams, or too short a stat series to plot).
  */
 async function buildMatchRecord(baseUrl, summary) {
+  const detailsParams = new URLSearchParams({
+    includeSpectators: "true",
+    includeTeamDeaths: "true",
+    includeChat: "true",
+    includeMapDraws: "true"
+  });
+
   const eventParams = new URLSearchParams({
     includeTeamStats: "true",
     includeExtraStats: "true",
@@ -94,6 +102,10 @@ async function buildMatchRecord(baseUrl, summary) {
     includeTeamDiedEvents: "true",
     includeCommanderPositionUpdates: "true",
   });
+  //a match api call is required since search does not provide teamdeaths or spectators
+  const detailJson = await getJson(
+    `${baseUrl}/api/match/${summary.id}?${detailsParams.toString()}`,
+  );
 
   const eventJson = await getJson(
     `${baseUrl}/api/game-event/${summary.id}?${eventParams.toString()}`,
@@ -145,9 +157,9 @@ async function buildMatchRecord(baseUrl, summary) {
     series: dataset.series,
     wind: dataset.wind,
     unitDefsById: dataset.unitDefsById,
-    playerLeaves: summary.playerLeaves ?? [],
-    spectatorCount: summary.spectators?.length ?? 0,
-    mapDraws: summary.mapDraws ?? [],
+    teamDeaths: detailJson.teamDeaths,
+    spectatorCount: detailJson.spectators?.length ?? 0,
+    mapDraws: detailJson.mapDraws,
     legionMatch: dataset.legionMatch,
   };
 }

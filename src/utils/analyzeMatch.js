@@ -35,7 +35,7 @@ export function analyzeMatch(match) {
     teamB,
     durationMin,
     wind,
-    playerLeaves,
+    teamDeaths,
     playerCount,
     gamemode,
     spectatorCount,
@@ -45,6 +45,7 @@ export function analyzeMatch(match) {
   const winnerIsA = winner === "A";
   const winnerFacts = winnerIsA ? teamA.facts : teamB.facts;
   const loserFacts = winnerIsA ? teamB.facts : teamA.facts;
+  console.log(winnerFacts)
   const isDuel = gamemode === "1" || playerCount === 2;
   const windAverage = wind?.average ?? 0;
 
@@ -53,7 +54,7 @@ export function analyzeMatch(match) {
     comeback: comeback(series, winnerIsA),
     backAndForth: backAndForth(series),
     stomp: stomp(series),
-    // quickForfeit: quickForfeit(loserFacts, playerCount),
+    quickForfeit: quickForfeit(loserFacts, playerCount, teamDeaths),
     // baseRace: baseRace(last, durationMin, playerCount),
     guerillaFighters: guerillaFighters(teamA.facts, teamB.facts),
     carpalTunnel: carpalTunnel(
@@ -158,7 +159,6 @@ function computeScore(magnitudes, durationMin, isDuel) {
 
   // sweet-spot duration bonus (most watchable games run 15-40 min)
   const timeBonus = calculateTimeBonus(durationMin);
-  console.log(durationMin, timeBonus)
   score += timeBonus;
 
   return Math.max(0, Math.min(100, Math.round(score)));
@@ -274,27 +274,40 @@ function stomp(series) {
 }
 
 /**
- * Premature forfeit: the losing team's army was still close to its peak when
+ * Premature forfeit: the losing team's army and eco was still close to its peak when
  * they died/quit, meaning they resigned rather than got ground down.
- * Weighted more for large teams via the magnitude (bigger games -> a quick
- * quit wastes more spectator time).
+ * Weighted more for large teams via the magnitude (bigger games -> more potential to keep fighting).
  */
-// function quickForfeit(loserFacts, playerCount) {
+function quickForfeit(loserFacts, playerCount, teamDeaths) {
+  //return 0 if team didnt resign
+  if (!teamResigned(teamDeaths))return { flag: false, magnitude: 0 };
+  const deathMinute = frameToMinute(loserFacts.deathFrame);
+  // approximate "quick" based on current AV and eco vs peak.
+  const armyRetainedRatio =
+    loserFacts.peakArmyValue > 0
+      ? loserFacts.finalArmyValue / loserFacts.peakArmyValue
+      : 0;
+  const ecoRetainedRatio =
+    loserFacts.peakEcoValue > 0
+      ? loserFacts.finalEcoValue / loserFacts.peakEcoValue
+      : 0;
+  const flag = armyRetainedRatio >= 0.5 && deathMinute > 0;
+  const sizeWeight = clamp01(playerCount / 8);
+  return { flag, magnitude: clamp01(armyRetainedRatio * sizeWeight) };
+}
 
-//   if (!loserFacts?.deathFrame || !loserFacts.peakArmyValue)
-//     return { flag: false, magnitude: 0 };
-//   const deathMinute = frameToMinute(loserFacts.deathFrame);
-//   // approximate army-at-death using the closest available fact: final value
-//   // recorded before death is effectively finalArmyValue, since teamFacts is
-//   // built from the full series which stops updating once a team is dead
-//   const armyRetainedRatio =
-//     loserFacts.peakArmyValue > 0
-//       ? loserFacts.finalArmyValue / loserFacts.peakArmyValue
-//       : 0;
-//   const flag = armyRetainedRatio >= 0.5 && deathMinute > 0;
-//   const sizeWeight = clamp01(playerCount / 8);
-//   return { flag, magnitude: clamp01(armyRetainedRatio * sizeWeight) };
-// }
+function teamResigned(teamDeaths) {
+  if (!teamDeaths || teamDeaths.length === 0) {
+    return false; 
+  }
+  // Find the death with the highest gameTime
+  const highestGameTimeObj = teamDeaths.reduce((prev, current) =>
+    (prev.gameTime > current.gameTime) ? prev : current
+  );
+
+  // Check if the reason is 2 (resign)
+  return highestGameTimeObj.reason === 2;
+}
 
 /**
  * significant building damage from both teams in a close time frams.

@@ -56,15 +56,15 @@ export const MILESTONES = [
     weight: -2,
     description: "Heavily one-sided, reduces spectator score.",
   },
-  // {
-  //   key: "quickForfeit",
-  //   label: "Quick Forfeit",
-  //   icon: Flag,
-  //   color: "--color-upset",
-  //   weight: -2,
-  //   description:
-  //     "Premature forfeits reduce spectator score, weighted more for large teams.",
-  // },
+  {
+    key: "quickForfeit",
+    label: "Quick Forfeit",
+    icon: Flag,
+    color: "--color-upset",
+    weight: -2,
+    description:
+      "Premature forfeits reduce spectator score, weighted more for large teams.",
+  },
   //{
   //  key: "baseRace",
   //  label: "Base Race",
