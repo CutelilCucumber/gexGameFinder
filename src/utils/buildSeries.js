@@ -305,7 +305,7 @@ function buildTeamFacts({
   }
 
   const deathEvent = teamDiedEvents.find((d) => teamIDs.has(d.teamID));
-  const lastPoint = series[series.length - 1];
+  const lastPoint = series[series.length - 2];
   const peakArmyPoint = series.reduce(
     (best, p) =>
       p[seriesKeys.army] > (best?.[seriesKeys.army] ?? -Infinity) ? p : best,

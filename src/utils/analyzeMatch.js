@@ -45,7 +45,6 @@ export function analyzeMatch(match) {
   const winnerIsA = winner === "A";
   const winnerFacts = winnerIsA ? teamA.facts : teamB.facts;
   const loserFacts = winnerIsA ? teamB.facts : teamA.facts;
-  console.log(winnerFacts)
   const isDuel = gamemode === "1" || playerCount === 2;
   const windAverage = wind?.average ?? 0;
 
@@ -291,9 +290,11 @@ function quickForfeit(loserFacts, playerCount, teamDeaths) {
     loserFacts.peakEcoValue > 0
       ? loserFacts.finalEcoValue / loserFacts.peakEcoValue
       : 0;
-  const flag = armyRetainedRatio >= 0.5 && deathMinute > 0;
+  //the surrendering team must resign a combined ratio of 1.5 av, ev
+  //.85+.85, 1+.7 etc
+  const flag = (armyRetainedRatio+ecoRetainedRatio) >= 1.7 && deathMinute > 0;
   const sizeWeight = clamp01(playerCount / 8);
-  return { flag, magnitude: clamp01(armyRetainedRatio * sizeWeight) };
+  return { flag, magnitude: clamp01((armyRetainedRatio+ecoRetainedRatio)/2 * sizeWeight) };
 }
 
 function teamResigned(teamDeaths) {

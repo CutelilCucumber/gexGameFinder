@@ -61,7 +61,7 @@ export const MILESTONES = [
     label: "Quick Forfeit",
     icon: Flag,
     color: "--color-upset",
-    weight: -2,
+    weight: -3,
     description:
       "Premature forfeits reduce spectator score, weighted more for large teams.",
   },
